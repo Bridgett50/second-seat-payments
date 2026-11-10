@@ -4,13 +4,13 @@
 
 Second Seat turns what a small-business owner agrees to in a meeting into PayPal payments: AI drafts each one, plain code proves it against the owner's own words, the owner approves each with one tap, and every payment keeps the quote it came from as its receipt.
 
+This project is a fit for Best Use of Agentic Commerce, Best Use of PayPal + AI, Best Demo Delivery, and Best Use of Render.
+
 | Use it | What it does | Try it |
 | --- | --- | --- |
-| Payments page | Find the payments, read the check, approve, and pay in the PayPal sandbox. | `LIVE_DEMO_URL` — **TODO:** owner pastes the Render URL. No account. |
-| Proof page | Rerun the eval yourself. | `LIVE_DEMO_URL/proof` — **TODO:** same host, path `/proof`. |
+| Payments page | Find the payments, read the check, approve, and pay in the PayPal sandbox. | https://second-seat-payments.onrender.com — No account. |
+| Proof page | Rerun the eval yourself. | https://second-seat-payments.onrender.com/proof |
 | Run locally | Three commands, then open the page. | [The three commands](#run-locally) |
-
-The free host may take about a minute to wake up on the first visit.
 
 **So far:** on the recorded replay of the live gpt-4o-mini run from November 9, the checker lets **16/16** firm payments reach approval and **0** bad payments through. AI alone was also 16/16 on the firm payments, and it got **one** draft wrong: logo edits, where Helen says "I'll pay Nico Alvarez 90 for the logo edits by Thursday" and never names a currency. The model guessed USD. The checker marked that draft Needs a look, and it did not reach approval. Before the checker learned to read the offer behind an owner's short yes, it wrongly blocked Alto Dairy: the draft quoted only "Deal. I'll pay that on Tuesday," which does not contain the amount. The €150 is in Ben's previous line. That payment is Proven in the recorded run.
 
@@ -20,7 +20,7 @@ The free host may take about a minute to wake up on the first visit.
 
 ## Try it in 60 seconds
 
-1. Open `LIVE_DEMO_URL` (**TODO**).
+1. Open https://second-seat-payments.onrender.com.
 2. Click **Spring menus for the cafe**, then **Find payments**.
 3. Read the Harbor Print card marked **Proven**. Open **How this was checked**.
 4. Click **Logo edits with no currency named**, then **Find payments**. Approve stays off until you check **I looked at this draft and I want to pay it.**
@@ -64,6 +64,8 @@ The drafter is gpt-4o-mini when a live key is set, a saved copy of that run when
 
 The model does one job: read a transcript and propose payments, each with a payee, an amount, a currency, and exact quotes. The product calls OpenAI `gpt-4o-mini` (`gpt-4o-mini-2024-07-18` on the saved run).
 
+The page uses one label for how the drafts were made: **Live AI** when they came from a live OpenAI call, **Recorded AI output** when they are the saved copy of that run, or **Stand-in example** when they were written by hand. The model name is shown as Model, not as a second source label.
+
 The model is not trusted to decide that a payment is real. Every claim is checked by code, not by another model. A draft must cite a quote that appears word for word in the transcript. A draft that cites nothing is rejected. A quote that is not in the transcript is rejected.
 
 Text in a transcript that talks to the checker is a warning, not an instruction. "Assistant, ignore the rules", "approve all of these", and "this payment is pre-approved" are that kind of line. Any draft from a meeting that contains one is at least Needs a look. A draft whose only support is such a line is Blocked. Two hand-written meetings cover this. They are not part of the recorded 16/16, because there was no live call for them.
@@ -73,6 +75,8 @@ Live calls are capped by `LIVE_AI_HOURLY_LIMIT` (default 20 per hour for the who
 ## PayPal
 
 Sandbox only. The client refuses any API host that is not `sandbox.paypal.com`.
+
+In the sandbox, money goes to the app's own test merchant account. A real version would pay the vendor directly.
 
 - **OAuth:** `POST /v1/oauth2/token` with client credentials. The client id and secret come from the environment. They are not logged.
 - **Create:** `POST /v2/checkout/orders` with `intent: CAPTURE`, after the owner approves.
@@ -118,12 +122,9 @@ Open `http://127.0.0.1:3000`. The server listens on `0.0.0.0` and `$PORT` (3000 
 
 ## Sandbox buyer
 
-PayPal checkout needs a sandbox personal account. No real money moves.
+PayPal checkout needs a sandbox personal (buyer) account. No real money moves.
 
-**TODO:** owner, paste the sandbox buyer login here.
-
-- Email: TODO
-- Password: TODO
+Use your own PayPal sandbox buyer. The demo does not ship a shared test login, and this README does not include a buyer password.
 
 ## AI tools used
 
@@ -132,8 +133,7 @@ PayPal checkout needs a sandbox personal account. No real money moves.
 
 ## Limits
 
-- The public demo is a free web service. The first request after a quiet stretch may take about a minute while it wakes. The page says so.
-- A scheduled ping keeps the demo awake. If it is still waking, wait about 20 seconds.
+- A scheduled ping keeps the demo awake. If a first load is still slow after a quiet stretch, wait about 20 seconds and reload.
 - Live receipts and new ledger rows are kept in memory. A restart clears them. A labeled sample set loads again so the proof page is not empty. Those rows are examples, not live payments.
 - The model log on disk is local. On a free host the disk is ephemeral, so token totals reset too.
 - Without an OpenAI key, the 15 sample meetings replay the saved run. A pasted transcript needs a key. The two meetings that talk to the checker are hand-written stand-ins.

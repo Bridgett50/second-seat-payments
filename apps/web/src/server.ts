@@ -299,7 +299,7 @@ function page(title: string, body: string): string {
       </nav>
     </div>
     <h1>${escapeHtml(title)}</h1>
-    <p class="wake">If the first load is slow, the free server is waking up. That can take about a minute. Wait and reload.</p>
+    <p class="wake">A scheduled ping keeps this demo awake. If a first load is still slow, wait about 20 seconds and reload.</p>
   </header>
   <main id="main">${body}</main>
   <footer class="site-footer"><p class="sandbox-badge">${FOOTER}</p></footer>

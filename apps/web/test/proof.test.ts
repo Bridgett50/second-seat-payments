@@ -55,7 +55,7 @@ describe("proof page", () => {
       const verify = await request(port, "/api/proof/ledger/verify", { method: "POST" });
       expect(verify.json.ok).toBe(true);
       expect(verify.json.checked).toBe(seedSampleLedger().length);
-      expect(page.text).toContain("about a minute");
+      expect(page.text).toContain("scheduled ping keeps this demo awake");
       expect(page.text).toContain("example data");
     });
   });
