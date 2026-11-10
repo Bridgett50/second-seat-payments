@@ -66,6 +66,8 @@ const PAYMENT_SCHEMA = {
           },
           quotes: {
             type: "array",
+            description:
+              "Exact transcript quotes. When one person states the amount and payee and the owner agrees in a later turn, include both the offer and the agreement.",
             items: { type: "string" },
           },
         },
@@ -161,6 +163,7 @@ function systemPrompt(): string {
     "Return a payment only when that owner agreed to pay it.",
     "For each payment include the payee, the amount as a decimal string with two fraction digits such as 480.00, the ISO currency code such as USD, what the payment is for, when it is due (or an empty string), and one or more exact quotes.",
     "Copy quotes character for character from the transcript. Do not paraphrase.",
+    "When another person states the amount and the payee, and the owner agrees in a following turn, include both exact quotes: the offer that states the amount and payee, and the owner's words agreeing to it.",
     "Do not invent amounts, payees, currencies, or quotes.",
     "Leave the list empty when the owner did not agree to pay anything.",
   ].join(" ");

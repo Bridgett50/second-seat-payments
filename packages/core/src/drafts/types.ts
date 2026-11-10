@@ -35,6 +35,11 @@ export interface CheckResult {
   verdict: Verdict;
   /** Plain-English reasons for the verdict. There is always at least one. */
   reasons: string[];
+  /**
+   * Extra transcript lines the checker used, when the draft's own quotes
+   * are not the whole story. The payments page highlights these too.
+   */
+  evidenceQuotes?: string[];
 }
 
 /** A batch of drafts, labeled with the mode that produced it. */

@@ -116,6 +116,7 @@ describe("payment finder modes", () => {
     const logPath = path.join(root, "drafter.log");
     const cacheDir = path.join(root, "cache");
     let authorization = "";
+    let requestBody = "";
     const batch = await findDrafts(
       { fixtureId: "fixture-a", transcript: "Owner: I'll pay Harbor Print $480.", owner: "Maya" },
       {
@@ -127,12 +128,15 @@ describe("payment finder modes", () => {
         fetchImpl: (_url, init) => {
           const headers = new Headers(init?.headers);
           authorization = headers.get("authorization") ?? "";
+          requestBody = typeof init?.body === "string" ? init.body : "";
           return Promise.resolve(successResponse());
         },
       },
     );
     expect(batch.mode).toBe("live");
     expect(batch.model).toBe("gpt-4o-mini");
+    expect(requestBody).toMatch(/offer that states the amount and payee/);
+    expect(requestBody).toMatch(/owner's words agreeing/);
     expect(batch.drafts[0]?.amount).toBe("480.00");
     expect(authorization).toBe(`Bearer ${SECRET}`);
     const log = readFileSync(logPath, "utf8");
