@@ -57,8 +57,8 @@ describe("payments page", () => {
       expect(home.text).toContain("PayPal Sandbox. No real money moves.");
       expect(home.text).toContain("Find payments");
       expect(home.text).toContain('href="/proof"');
-      expect(home.text).toContain("scheduled ping keeps this demo awake");
-      expect(home.text).toContain("20 seconds");
+      expect(home.text).not.toContain("scheduled ping keeps this demo awake");
+      expect(home.text).toContain("Pay what you agreed to.");
       const meetings = await request(port, "/api/meetings");
       const samples = meetings.json.samples as unknown[];
       expect(samples.length).toBeGreaterThanOrEqual(15);
@@ -400,6 +400,20 @@ describe("bank-change sample and fraud eval", () => {
       expect(run.json.meetingCount).toBe(25);
       expect(run.json.controlCount).toBe(7);
       expect(run.text).toContain("did not call OpenAI");
+    });
+  });
+});
+
+describe("self-hosted font", () => {
+  it("serves the Hanken Grotesk file and refuses other paths", async () => {
+    await withServer({}, async (port) => {
+      const font = await fetch(`http://127.0.0.1:${port}/fonts/hanken-grotesk-latin-wght-normal.woff2`);
+      expect(font.status).toBe(200);
+      expect(font.headers.get("content-type")).toBe("font/woff2");
+      const missing = await fetch(`http://127.0.0.1:${port}/fonts/nope.woff2`);
+      expect(missing.status).toBe(404);
+      const sneaky = await fetch(`http://127.0.0.1:${port}/fonts/..%2Fapp.js`);
+      expect(sneaky.status).toBe(404);
     });
   });
 });

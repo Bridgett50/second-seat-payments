@@ -21,6 +21,7 @@ import {
   recordedTargetsMet,
   FRAUD_EVAL_TARGETS,
   runFraudEval,
+  loadFraudMeetings,
   type CheckResult,
   type DrafterMode,
   type PaymentDraft,
@@ -93,6 +94,9 @@ interface SampleMeeting {
   /** Hand-written drafts. They are not replayed as recorded model output. */
   set?: "stand-in" | "fraud-sample";
   handWritten?: boolean;
+  /** Display only: how many payments the answer key expects. */
+  payments?: number;
+  correct?: unknown[];
 }
 
 interface DemoFile {
@@ -220,6 +224,7 @@ function loadSamples(root: string): { samples: SampleMeeting[]; standIn: SampleM
         transcript: parsed.transcript,
         kind: "sample" as const,
         handWritten: parsed.set === "stand-in",
+        payments: Array.isArray(parsed.correct) ? parsed.correct.length : 0,
         note: parsed.set === "stand-in" ? "Hand-written example, not AI output." : "",
       };
     });
@@ -288,25 +293,47 @@ function page(title: string, body: string): string {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)}</title>
+  <link rel="preload" href="/fonts/hanken-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <header class="site-header">
-    <a class="skip" href="#main">Skip to content</a>
-    <div class="header-bar">
-      <p class="eyebrow">Second Seat</p>
-      <nav aria-label="Sections">
-        <a href="/">Payments</a>
-        <a href="/proof">Proof</a>
-      </nav>
-    </div>
-    <h1>${escapeHtml(title)}</h1>
-    <p class="wake">A scheduled ping keeps this demo awake. If a first load is still slow, wait about 20 seconds and reload.</p>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <a class="wordmark" href="/">Second Seat</a>
+    <span class="sandbox-pill">PayPal sandbox · no real money</span>
+    <nav aria-label="Sections">
+      <a href="/">Payments</a>
+      <a href="/proof">Proof</a>
+    </nav>
   </header>
-  <main id="main">${body}</main>
+  <main id="main"><h1 class="visually-hidden">${escapeHtml(title)}</h1>${body}</main>
   <footer class="site-footer"><p class="sandbox-badge">${FOOTER}</p></footer>
 </body>
 </html>`;
+}
+
+const CT_FORMAT = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/Chicago",
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+/** Display only: a stored ISO time shown in Central Time. */
+function centralTime(iso: string): string {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? iso : `${CT_FORMAT.format(date)} CT`;
+}
+
+function displayMoney(amount: string, currency: string): string {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return escapeHtml(`${amount} ${currency}`);
+  try {
+    return escapeHtml(new Intl.NumberFormat("en-US", { style: "currency", currency }).format(value));
+  } catch {
+    return escapeHtml(`${amount} ${currency}`);
+  }
 }
 
 function presentDraft(draft: PaymentDraft, check: CheckResult): Record<string, unknown> {
@@ -334,20 +361,21 @@ function sampleReceiptHtml(receipt: SampleReceiptView): string {
   const quotes = receipt.quotes.map((quote) => `<blockquote>${escapeHtml(quote)}</blockquote>`).join("");
   return page(
     "Sample receipt",
-    `<article class="receipt sample-receipt">
-      <p class="banner">${escapeHtml(receipt.label)}. This is not a live payment.</p>
-      <dl>
-        <dt>Outcome</dt><dd>${escapeHtml(receipt.outcome)}</dd>
-        <dt>Payee</dt><dd>${escapeHtml(receipt.payee)}</dd>
-        <dt>Amount</dt><dd>${escapeHtml(receipt.amount)} ${escapeHtml(receipt.currency)}</dd>
-        <dt>What for</dt><dd>${escapeHtml(receipt.purpose)}</dd>
-        <dt>PayPal order</dt><dd>None. This is example data.</dd>
-        <dt>PayPal capture</dt><dd>None. This is example data.</dd>
-      </dl>
-      <h2>Example quote</h2>
-      ${quotes}
-      <p><a href="/proof">Back to proof</a></p>
-    </article>`,
+    `<div class="receipt-page">
+      <article class="receipt sample-receipt">
+        <p class="receipt-status wait">${escapeHtml(receipt.label)}. This is not a live payment.</p>
+        <p class="receipt-for">${escapeHtml(receipt.outcome)} · ${escapeHtml(receipt.purpose)}</p>
+        <div class="receipt-quote paper"><p class="label">Example quote</p>${quotes}</div>
+      </article>
+      <aside class="receipt-side paper">
+        <p class="label">Outcome</p><p>${escapeHtml(receipt.outcome)}</p>
+        <p class="label">Payee</p><p>${escapeHtml(receipt.payee)}</p>
+        <p class="label">Amount</p><p>${escapeHtml(receipt.amount)} ${escapeHtml(receipt.currency)}</p>
+        <p class="label">PayPal order</p><p>None. This is example data.</p>
+        <p class="label">PayPal capture</p><p>None. This is example data.</p>
+        <p class="sandbox-note"><a href="/proof">Back to proof</a></p>
+      </aside>
+    </div>`,
   );
 }
 
@@ -866,34 +894,38 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
   }
 
   function receiptHtml(payment: TrackedPayment): string {
-    const quotes = payment.quotes.map((quote) => `<blockquote>${escapeHtml(quote)}</blockquote>`).join("");
+    const quotes = payment.quotes.map((quote) => `<blockquote>“${escapeHtml(quote)}”</blockquote>`).join("");
     const audit =
       payment.audit.length === 0
         ? "<p>No decision has been recorded.</p>"
         : `<ol class="audit">${payment.audit
             .map(
               (event) =>
-                `<li><time datetime="${escapeHtml(event.at)}">${escapeHtml(event.at)}</time> ${escapeHtml(auditLabel(event))}</li>`,
+                `<li><time datetime="${escapeHtml(event.at)}">${escapeHtml(centralTime(event.at))}</time> · ${escapeHtml(auditLabel(event))}</li>`,
             )
             .join("")}</ol>`;
+    const captured = payment.status === "captured";
+    const tone = captured ? "ok" : payment.status === "approved" ? "wait" : "no";
+    const headline = statusText(payment);
+    const paypalStatus = payment.paypalStatus ?? "Not fetched";
     return page(
       "Receipt",
-      `<article class="receipt">
-        <dl>
-          <dt>Status</dt><dd class="status-value">${escapeHtml(statusText(payment))}</dd>
-          <dt>Payee</dt><dd>${escapeHtml(payment.payee)}</dd>
-          <dt>Amount</dt><dd>${escapeHtml(payment.amount)} ${escapeHtml(payment.currency)}</dd>
-          <dt>What for</dt><dd>${escapeHtml(payment.purpose || "Not stated")}</dd>
-          <dt>PayPal order</dt><dd>${escapeHtml(payment.orderId ?? "None")}</dd>
-          <dt>PayPal status</dt><dd>${escapeHtml(payment.paypalStatus ?? "Not fetched")}</dd>
-          <dt>PayPal capture</dt><dd>${escapeHtml(payment.captureId ?? "Not captured")}</dd>
-        </dl>
-        <h2>Decision log</h2>
-        ${audit}
-        <h2>From the transcript</h2>
-        ${quotes || "<p>No quote was stored.</p>"}
-        <p><a href="/">Back to payments</a></p>
-      </article>`,
+      `<div class="receipt-page">
+        <article class="receipt">
+          <p class="receipt-status ${tone}">${captured ? "✓ " : ""}<span class="status-value">${escapeHtml(captured ? "Captured" : headline)}</span></p>
+          <p class="receipt-amount">${displayMoney(payment.amount, payment.currency)}<span class="ccy">${escapeHtml(payment.currency)}</span></p>
+          <p class="receipt-for">${captured ? "paid for" : "for"} ${escapeHtml(payment.purpose || "a purpose not stated")} · ${escapeHtml(payment.payee)}</p>
+          <p class="status-pill${verifiedCaptured(paypalStatus) ? "" : " wait"}">PayPal status: ${escapeHtml(paypalStatus)}</p>
+          <div class="receipt-quote paper"><p class="label">The words this payment came from</p>${quotes || "<p>No quote was stored.</p>"}</div>
+        </article>
+        <aside class="receipt-side paper">
+          <h2 class="label">Decision log</h2>
+          ${audit}
+          <p class="label">PayPal</p>
+          <p class="mono">Order ${escapeHtml(payment.orderId ?? "None")}<br />Capture ${escapeHtml(payment.captureId ?? "Not captured")}</p>
+          <p class="sandbox-note">Sandbox: paid to the app's test merchant, not to ${escapeHtml(payment.payee)}. A real version pays the vendor directly.</p>
+        </aside>
+      </div>`,
     );
   }
 
@@ -956,6 +988,17 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       res.end(readFileSync(file));
       return;
     }
+    if (method === "GET" && /^\/fonts\/[a-z0-9-]+\.(woff2|txt)$/.test(url.pathname)) {
+      const file = path.join(publicDir, "fonts", path.basename(url.pathname));
+      if (!existsSync(file)) {
+        sendHtml(res, 404, page("Not found", "<p>That font is not part of the payments demo.</p>"));
+        return;
+      }
+      const type = url.pathname.endsWith(".woff2") ? "font/woff2" : "text/plain; charset=utf-8";
+      res.writeHead(200, { "content-type": type, "cache-control": "public, max-age=86400" });
+      res.end(readFileSync(file));
+      return;
+    }
     if (method === "GET" && url.pathname === "/api/meetings") {
       const paused = livePaused();
       sendJson(res, 200, {
@@ -1000,6 +1043,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
         model: run.model,
         recordedAt: run.recordedAt,
         targets: FRAUD_EVAL_TARGETS,
+        categories: Object.fromEntries(loadFraudMeetings(root).map((meeting) => [meeting.id, meeting.category])),
         ...run.result,
       });
       return;

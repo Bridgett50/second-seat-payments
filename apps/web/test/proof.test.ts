@@ -43,7 +43,7 @@ describe("proof page", () => {
       const page = await request(port, "/proof");
       expect(page.status).toBe(200);
       expect(page.text).toContain("PayPal Sandbox. No real money moves.");
-      expect(page.text).toContain("Run the recorded eval");
+      expect(page.text).toContain("Run the eval again");
       expect(page.text).toContain("Verify chain");
       expect(page.text).not.toContain("16/16");
       const proof = await request(port, "/api/proof");
@@ -55,7 +55,7 @@ describe("proof page", () => {
       const verify = await request(port, "/api/proof/ledger/verify", { method: "POST" });
       expect(verify.json.ok).toBe(true);
       expect(verify.json.checked).toBe(seedSampleLedger().length);
-      expect(page.text).toContain("scheduled ping keeps this demo awake");
+      expect(page.text).not.toContain("scheduled ping keeps this demo awake");
       expect(page.text).toContain("example data");
     });
   });

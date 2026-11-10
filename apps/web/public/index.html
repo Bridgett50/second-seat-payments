@@ -4,50 +4,71 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Second Seat payments</title>
+    <link rel="preload" href="/fonts/hanken-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <header class="site-header">
-      <a class="skip" href="#samples-heading">Skip to sample meetings</a>
-      <div class="header-bar">
-        <p class="eyebrow">Second Seat</p>
-        <nav aria-label="Sections">
-          <a href="/" aria-current="page">Payments</a>
-          <a href="/proof">Proof</a>
-        </nav>
-      </div>
-      <h1>Approval-gated payments</h1>
-      <p class="lead">
-        Pick a meeting, find the payments, and read the checker's verdict before anything can be approved.
-      </p>
-      <p class="wake">A scheduled ping keeps this demo awake. If a first load is still slow, wait about 20 seconds and reload.</p>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="topbar">
+      <a class="wordmark" href="/">Second Seat</a>
+      <span class="sandbox-pill">PayPal sandbox · no real money</span>
+      <nav aria-label="Sections">
+        <a href="/" aria-current="page">Payments</a>
+        <a href="/proof">Proof</a>
+      </nav>
     </header>
-    <main>
+    <main id="main">
       <p id="paypal-banner" class="banner" hidden></p>
-      <section class="panel" aria-labelledby="samples-heading">
-        <h2 id="samples-heading">Sample meetings</h2>
-        <p id="drafter-note" class="muted"></p>
-        <div id="meeting-list" class="meeting-list" role="group" aria-labelledby="samples-heading"></div>
-        <h2 id="standin-heading" class="standin-heading">Stand-in example</h2>
-        <div id="standin-slot"></div>
-        <section class="paste">
-          <h2>Paste a transcript</h2>
-          <label>
-            Owner's name
-            <input id="paste-owner" name="owner" type="text" autocomplete="name" />
-          </label>
-          <label>
-            Transcript
-            <textarea id="paste-transcript" name="transcript" rows="6"></textarea>
-          </label>
-          <button id="paste-find" type="button">Find payments in this transcript</button>
-        </section>
+
+      <section id="home" class="home" aria-labelledby="home-title">
+        <div class="hero">
+          <h1 id="home-title" class="claim">Pay what you agreed to. <span class="hl">Nothing else.</span></h1>
+          <p class="explainer">Second Seat reads a meeting, drafts each payment with gpt-4o-mini, checks every payee and amount against the owner's own words, and waits for your approval before PayPal moves money.</p>
+          <div id="home-tiles" class="tiles" aria-live="polite"></div>
+          <p class="stakes">In 2024, $2.77 billion was lost to business email compromise across 21,442 complaints. Fake “our bank changed” requests are a classic version. Source: <a href="https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf">FBI IC3 2024 Internet Crime Report</a>, pages 10 and 19.</p>
+        </div>
+        <div class="meetings" aria-labelledby="samples-heading">
+          <h2 id="samples-heading" class="label" hidden>Sample meetings</h2>
+          <div id="pinned-slot"></div>
+          <p class="label group-label">Pays cleanly</p>
+          <div id="clean-list"></div>
+          <p class="label group-label">Traps the checker must stop</p>
+          <div id="trap-list"></div>
+          <details class="more">
+            <summary id="more-summary">More meetings · Paste your own transcript</summary>
+            <div id="meeting-list" class="all-meetings" role="group" aria-labelledby="more-summary"></div>
+            <p class="label group-label">Stand-in example</p>
+            <div id="standin-slot"></div>
+            <section class="paste" aria-labelledby="paste-heading">
+              <p id="paste-heading" class="label group-label">Paste a transcript</p>
+              <label>Owner's name <input id="paste-owner" name="owner" type="text" autocomplete="name" /></label>
+              <label>Transcript <textarea id="paste-transcript" name="transcript" rows="5"></textarea></label>
+              <button id="paste-find" type="button">Find payments in this transcript</button>
+              <p id="drafter-note" class="muted"></p>
+            </section>
+          </details>
+        </div>
       </section>
-      <section id="transcript-panel" class="panel" hidden>
-        <h2 id="transcript-title">Transcript</h2>
-        <pre id="transcript" class="transcript"></pre>
-        <button id="find-payments" type="button">Find payments</button>
+
+      <section id="transcript-panel" class="meeting-view" hidden>
+        <div>
+          <p class="back"><button type="button" class="linklike back-home">← All meetings</button></p>
+          <div class="transcript-card paper">
+            <p class="label">Meeting · <span id="transcript-title">Transcript</span></p>
+            <div id="transcript" class="transcript"></div>
+            <button id="find-payments" type="button" class="primary">Find payments</button>
+            <p class="transcript-note">Owner's lines are tinted. Drafted live by gpt-4o-mini; checked by plain code.</p>
+          </div>
+        </div>
+        <div class="drafts-col">
+          <p class="label">Drafts</p>
+          <div id="drafts-slot">
+            <div class="skeleton"></div>
+            <div class="skeleton faint"></div>
+          </div>
+        </div>
       </section>
+
       <section id="results" class="results" hidden aria-live="polite"></section>
       <p id="page-error" class="error" role="alert" hidden></p>
     </main>
