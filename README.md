@@ -133,6 +133,7 @@ PayPal checkout needs a sandbox personal account. No real money moves.
 ## Limits
 
 - The public demo is a free web service. The first request after a quiet stretch may take about a minute while it wakes. The page says so.
+- A scheduled ping keeps the demo awake. If it is still waking, wait about 20 seconds.
 - Live receipts and new ledger rows are kept in memory. A restart clears them. A labeled sample set loads again so the proof page is not empty. Those rows are examples, not live payments.
 - The model log on disk is local. On a free host the disk is ephemeral, so token totals reset too.
 - Without an OpenAI key, the 15 sample meetings replay the saved run. A pasted transcript needs a key. The two meetings that talk to the checker are hand-written stand-ins.
