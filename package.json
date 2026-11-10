@@ -13,8 +13,11 @@
   ],
   "scripts": {
     "build": "npm run build --workspace @second-seat/core && npm run build --workspace @second-seat/web",
-    "typecheck": "npm run typecheck --workspace @second-seat/core && npm run typecheck --workspace @second-seat/web",
-    "test": "npm test --workspace @second-seat/core"
+    "typecheck": "npm run build --workspace @second-seat/core && npm run typecheck --workspace @second-seat/web && tsc --noEmit -p eval/tsconfig.json",
+    "test": "npm test --workspace @second-seat/core",
+    "eval": "npm run build --workspace @second-seat/core && tsc -p eval/tsconfig.json && DRAFTER_MODE=stand-in node eval/dist/run-eval.js",
+    "eval:live": "npm run build --workspace @second-seat/core && tsc -p eval/tsconfig.json && DRAFTER_MODE=live node eval/dist/run-eval.js",
+    "eval:recorded": "npm run build --workspace @second-seat/core && tsc -p eval/tsconfig.json && DRAFTER_MODE=recorded node eval/dist/run-eval.js"
   },
   "devDependencies": {
     "@types/node": "20.17.10",

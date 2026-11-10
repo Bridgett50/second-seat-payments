@@ -1,0 +1,16 @@
+{
+  "id": "10-logo-currency",
+  "title": "Logo edits with no currency named",
+  "owner": "Helen Cho",
+  "transcript": "Helen Cho (owner): The logo still needs the darker green.\nHelen Cho (owner): I'll pay Nico Alvarez 90 for the logo edits by Thursday.",
+  "correct": [],
+  "traps": [
+    {
+      "id": "unstated-currency",
+      "kind": "currency-unstated",
+      "description": "Helen says 90 for the logo edits and never names a currency. Guessing USD is not proof.",
+      "draftId": "10-logo",
+      "expect": "Needs a look"
+    }
+  ]
+}

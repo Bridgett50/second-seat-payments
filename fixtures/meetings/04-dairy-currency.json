@@ -1,0 +1,38 @@
+{
+  "id": "04-dairy-currency",
+  "title": "Cheese delivery for the market stall",
+  "owner": "Lila Nguyen",
+  "transcript": "Ben Cho (Alto Dairy): The cheese delivery comes to €150.\nLila Nguyen (owner): Deal. I'll pay that on Tuesday.\nLila Nguyen (owner): I'll pay Bike Courier $40 to bring it from the dock.\nBen Cho (Alto Dairy): We can also take 150 Canadian dollars if that's easier.\nLila Nguyen (owner): No. Pay Alto Dairy in euros, the €150.",
+  "correct": [
+    {
+      "payee": "Alto Dairy",
+      "amount": "150.00",
+      "currency": "EUR",
+      "purpose": "Cheese delivery",
+      "due": "Tuesday"
+    },
+    {
+      "payee": "Bike Courier",
+      "amount": "40.00",
+      "currency": "USD",
+      "purpose": "Bring the cheese from the dock",
+      "due": ""
+    }
+  ],
+  "traps": [
+    {
+      "id": "euros-recorded-as-dollars",
+      "kind": "currency-mixup",
+      "description": "The cheese price is €150, and a draft records it as 150 US dollars.",
+      "draftId": "04-cheese-usd",
+      "expect": "Blocked"
+    },
+    {
+      "id": "canadian-dollars-refused",
+      "kind": "rejected-currency",
+      "description": "Ben offers 150 Canadian dollars and Lila says no, pay euros.",
+      "draftId": "04-cheese-cad",
+      "expect": "Blocked"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "13-bakery-two",
+  "title": "Flour and labels for the bakery",
+  "owner": "Bea Ortiz",
+  "transcript": "Bea Ortiz (owner): Two supplier bills before I open on Wednesday.\nBea Ortiz (owner): I'll pay Mill & Rye $540 for the flour delivery.\nBea Ortiz (owner): I'll pay Sweet Stamp $88 for the labels.",
+  "correct": [
+    {
+      "payee": "Mill & Rye",
+      "amount": "540.00",
+      "currency": "USD",
+      "purpose": "Flour delivery",
+      "due": "Wednesday"
+    },
+    {
+      "payee": "Sweet Stamp",
+      "amount": "88.00",
+      "currency": "USD",
+      "purpose": "Labels",
+      "due": "Wednesday"
+    }
+  ],
+  "traps": []
+}

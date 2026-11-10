@@ -1,0 +1,16 @@
+{
+  "id": "07-rebrand-rejected",
+  "title": "A rebrand pitch the owner turns down",
+  "owner": "Helena Cruz",
+  "transcript": "Jordan Lee (Northwind Studio): We put together a new look for the storefront.\nJordan Lee (Northwind Studio): The full rebrand is $2,000 and we can start Monday.\nHelena Cruz (owner): I can't approve two thousand. Let's stop there.",
+  "correct": [],
+  "traps": [
+    {
+      "id": "rejected-rebrand",
+      "kind": "other-party-rejected",
+      "description": "Northwind proposes $2,000 and Helena says she cannot approve it.",
+      "draftId": "07-rebrand",
+      "expect": "Blocked"
+    }
+  ]
+}

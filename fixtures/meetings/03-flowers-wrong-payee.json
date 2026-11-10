@@ -1,0 +1,24 @@
+{
+  "id": "03-flowers-wrong-payee",
+  "title": "Saturday flowers for the shop",
+  "owner": "Owen Blake",
+  "transcript": "Owen Blake (owner): The Saturday table needs flowers, nothing fancy.\nOwen Blake (owner): I'll pay Lena's Flowers $220 for the Saturday centerpieces.\nOwen Blake (owner): The landlord at Oak Street Properties can wait until next month.",
+  "correct": [
+    {
+      "payee": "Lena's Flowers",
+      "amount": "220.00",
+      "currency": "USD",
+      "purpose": "Saturday centerpieces",
+      "due": "Saturday"
+    }
+  ],
+  "traps": [
+    {
+      "id": "landlord-instead-of-florist",
+      "kind": "wrong-payee",
+      "description": "The $220 quote is about Lena's Flowers, not the landlord.",
+      "draftId": "03-landlord",
+      "expect": "Blocked"
+    }
+  ]
+}

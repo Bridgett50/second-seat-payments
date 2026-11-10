@@ -1,0 +1,24 @@
+{
+  "id": "09-recital-cancelled",
+  "title": "Recital deposit cancelled, programs kept",
+  "owner": "Jonah Blake",
+  "transcript": "Jonah Blake (owner): The June recital needs a hall and a one-page program.\nJonah Blake (owner): I'll pay Peak Hall $800 as the deposit for the June recital.\nJonah Blake (owner): I'll pay Metro Print $60 for the programs.\nJonah Blake (owner): Actually, cancel the Peak Hall deposit. The recital moved to the school gym.",
+  "correct": [
+    {
+      "payee": "Metro Print",
+      "amount": "60.00",
+      "currency": "USD",
+      "purpose": "Recital programs",
+      "due": ""
+    }
+  ],
+  "traps": [
+    {
+      "id": "cancelled-hall-deposit",
+      "kind": "cancelled",
+      "description": "Jonah agrees to an $800 Peak Hall deposit and then cancels it.",
+      "draftId": "09-hall",
+      "expect": "Blocked"
+    }
+  ]
+}

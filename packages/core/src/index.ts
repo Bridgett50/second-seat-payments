@@ -1,6 +1,6 @@
 /**
- * Public entry for this package. It re-exports the approval gate for the
- * copied tests and the PayPal sandbox client.
+ * Public entry for this package. It re-exports the approval gate, the
+ * payment finder, and the deterministic checker.
  */
 export {
   createDemoPayPalPort,
@@ -18,3 +18,23 @@ export type {
   PaymentRecord,
   PaymentStatus,
 } from "./payments/index.js";
+export {
+  admitDraftToGate,
+  checkDraft,
+  checkDrafts,
+  decideAdmission,
+  findDrafts,
+  receiptPurpose,
+  samePayment,
+  scorePayments,
+  DEFAULT_OPENAI_MODEL,
+} from "./drafts/index.js";
+export type {
+  AdmitResult,
+  CheckResult,
+  DraftBatch,
+  DrafterMode,
+  PaymentDraft,
+  StandInLibrary,
+  Verdict,
+} from "./drafts/index.js";

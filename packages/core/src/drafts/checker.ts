@@ -1,0 +1,475 @@
+/**
+ * Prove a payment draft from the transcript, with no model in the loop.
+ *
+ * A draft is Proven only when every quote is word for word in the
+ * transcript, the amount, currency, and payee sit in that quote or follow
+ * from it, the owner said it or agreed to it, and nobody takes it back
+ * later. Anything the checker cannot prove is Needs a look or Blocked.
+ * Blocked never reaches the approval gate.
+ */
+import { extractMoney, isQuantityOrDate, mentionsValue, normalizeAmount, normalizeCurrency, paymentKey, significantWords } from "./money.js";
+import { parseTranscript, turnContaining, type Turn } from "./transcript.js";
+import type { CheckResult, PaymentDraft, Verdict } from "./types.js";
+
+export interface CheckInput {
+  transcript: string;
+  owner: string;
+  draft: PaymentDraft;
+}
+
+export interface CheckBatchInput {
+  transcript: string;
+  owner: string;
+  drafts: readonly PaymentDraft[];
+}
+
+interface LocatedQuote {
+  quote: string;
+  turn: Turn;
+}
+
+function snippet(text: string, max = 90): string {
+  const oneLine = text.replace(/\s+/g, " ").trim();
+  if (oneLine.length <= max) return oneLine;
+  return `${oneLine.slice(0, max - 3)}...`;
+}
+
+function sentenceContaining(text: string, value: number): string {
+  const parts = text.split(/(?<=[.!?])\s+/);
+  for (const part of parts) {
+    if (mentionsValue(part, value).length > 0) return part;
+  }
+  return text;
+}
+
+function hasFirmAgreement(text: string): boolean {
+  const lower = text.toLowerCase();
+  return [
+    /\bi'll pay\b/,
+    /\bi will pay\b/,
+    /\bwe'll pay\b/,
+    /\bwe will pay\b/,
+    /\bi'm paying\b/,
+    /\bi am paying\b/,
+    /\bi agree\b/,
+    /\bagreed\b/,
+    /\bdeal\b/,
+    /\bthat works\b/,
+    /\bgo ahead\b/,
+    /\bsounds good\b/,
+    /\blet's do it\b/,
+    /\binvoice me\b/,
+    /\byou can invoice\b/,
+    /\bsend the invoice\b/,
+    /\bi accept\b/,
+    /\byes\b/,
+    /\byeah\b/,
+    /\byep\b/,
+    /\bdo it\b/,
+  ].some((pattern) => pattern.test(lower));
+}
+
+function hasRejection(text: string): boolean {
+  const stripped = text
+    .toLowerCase()
+    .replace(/\bno problem\b/g, " ")
+    .replace(/\bno worries\b/g, " ");
+  return [
+    /\bno\b/,
+    /\bnope\b/,
+    /\bnah\b/,
+    /\btoo much\b/,
+    /\btoo high\b/,
+    /\btoo expensive\b/,
+    /\bcan't approve\b/,
+    /\bcannot approve\b/,
+    /\bcan't pay\b/,
+    /\bcannot pay\b/,
+    /\bwon't\b/,
+    /\bwill not\b/,
+    /\bnot going to\b/,
+    /\bnot this month\b/,
+    /\bhold off\b/,
+    /\bskip the\b/,
+    /\bout of (?:our )?budget\b/,
+    /\blet's not\b/,
+    /\bdon't pay\b/,
+    /\bdo not pay\b/,
+    /\bnot paying\b/,
+  ].some((pattern) => pattern.test(stripped));
+}
+
+function hasCancellation(text: string): boolean {
+  const lower = text.toLowerCase();
+  return [
+    /\bcancel/,
+    /\bcall(?: it| this)? off\b/,
+    /\bdon't pay\b/,
+    /\bdo not pay\b/,
+    /\bnot paying\b/,
+    /\bwon't be paying\b/,
+    /\bnever mind\b/,
+    /\bforget the (?:payment|deposit|invoice)\b/,
+    /\bscratch that\b/,
+    /\bwe're not paying\b/,
+    /\bwe are not paying\b/,
+  ].some((pattern) => pattern.test(lower));
+}
+
+/** A hard hedge is not a promise. A soft hedge makes a promise conditional. */
+function hedgeOf(text: string): "hard" | "soft" | "none" {
+  const lower = text.toLowerCase();
+  if (/\b(maybe|might|perhaps|possibly|what if|hypothetically|not sure)\b/.test(lower)) {
+    return "hard";
+  }
+  if (/\b(we could|could we|if we|if the budget|if budget)\b/.test(lower)) {
+    return "soft";
+  }
+  return "none";
+}
+
+function isWeakAcknowledgement(text: string): boolean {
+  if (hasFirmAgreement(text) || hasRejection(text)) return false;
+  const trimmed = text.trim().toLowerCase().replace(/[.!\s]+$/g, "");
+  return /^(ok|okay|got it|thanks|thank you|sure|right|uh huh|noted|sounds interesting)$/.test(
+    trimmed,
+  );
+}
+
+function concernsPayee(text: string, payee: string): boolean {
+  const words = significantWords(payee);
+  if (words.length === 0) return false;
+  const lower = text.toLowerCase();
+  return words.every((word) => lower.includes(word));
+}
+
+function nextOwnerTurn(turns: readonly Turn[], afterIndex: number): Turn | null {
+  for (let index = afterIndex + 1; index < turns.length && index <= afterIndex + 4; index += 1) {
+    const turn = turns[index];
+    if (turn?.isOwner) return turn;
+  }
+  return null;
+}
+
+function previousOtherSpeaker(turns: readonly Turn[], quoteTurn: Turn): Turn | null {
+  for (let index = quoteTurn.index - 1; index >= 0; index -= 1) {
+    const turn = turns[index];
+    if (turn !== undefined && !turn.isOwner) return turn;
+  }
+  return null;
+}
+
+function moneyText(amount: string, currency: string): string {
+  return `${amount} ${currency}`;
+}
+
+function result(draftId: string, verdict: Verdict, reasons: string[]): CheckResult {
+  return {
+    draftId,
+    verdict,
+    reasons: reasons.length > 0 ? reasons : ["The checker could not prove this draft."],
+  };
+}
+
+function laterProblem(input: {
+  turns: readonly Turn[];
+  quoteTurn: Turn;
+  owner: string;
+  payee: string;
+  amount: number;
+  currency: string;
+  amountText: string;
+}): string | null {
+  for (const turn of input.turns) {
+    if (!turn.isOwner || turn.index <= input.quoteTurn.index) continue;
+    const aboutPayee = concernsPayee(turn.text, input.payee);
+    const mentionsThisAmount = mentionsValue(turn.text, input.amount).length > 0;
+    if (hasCancellation(turn.text) && (aboutPayee || mentionsThisAmount)) {
+      return `${input.owner} later cancelled this payment ("${snippet(turn.text)}").`;
+    }
+    if (!aboutPayee) continue;
+    const changed = extractMoney(turn.text).find((mention) => {
+      const differentValue = Math.abs(mention.value - input.amount) >= 0.001;
+      const differentCurrency =
+        mention.currency !== null && mention.currency !== input.currency;
+      return differentValue || differentCurrency;
+    });
+    if (changed !== undefined) {
+      const shown =
+        changed.currency === null
+          ? changed.value.toFixed(2)
+          : `${changed.value.toFixed(2)} ${changed.currency}`;
+      return `${input.owner} later changed this to ${shown}, so ${input.amountText} is no longer what was agreed.`;
+    }
+  }
+  return null;
+}
+
+type Attribution =
+  | { kind: "proven"; sentence: string }
+  | { kind: "look"; reason: string }
+  | { kind: "block"; reason: string };
+
+function attributeQuote(input: {
+  turns: readonly Turn[];
+  quoteTurn: Turn;
+  quote: string;
+  owner: string;
+  amount: number;
+  currency: string;
+}): Attribution {
+  const sentence = sentenceContaining(input.quote, input.amount);
+  const hedge = hedgeOf(sentence);
+  const firm = hasFirmAgreement(sentence);
+  if (hedge === "hard" || (hedge === "soft" && !firm)) {
+    return {
+      kind: "block",
+      reason: `This is only a maybe, not a promise to pay ("${snippet(sentence)}").`,
+    };
+  }
+  if (hedge === "soft" && firm) {
+    return {
+      kind: "look",
+      reason: `The promise depends on a condition ("${snippet(sentence)}"), so it needs a look before anyone pays it.`,
+    };
+  }
+
+  if (input.quoteTurn.isOwner) {
+    if (hasRejection(sentence) && !firm) {
+      return {
+        kind: "block",
+        reason: `${input.owner} turned this down ("${snippet(sentence)}").`,
+      };
+    }
+    if (firm) {
+      return {
+        kind: "proven",
+        sentence: `${input.owner} said this and agreed to pay it.`,
+      };
+    }
+    return {
+      kind: "look",
+      reason: `${input.owner} said this, but it is not a clear promise to pay, so it needs a look.`,
+    };
+  }
+
+  const response = nextOwnerTurn(input.turns, input.quoteTurn.index);
+  if (response === null) {
+    return {
+      kind: "block",
+      reason: `${input.quoteTurn.speakerName} said this, and ${input.owner} did not agree to pay it.`,
+    };
+  }
+  const responseFirm = hasFirmAgreement(response.text);
+  const responseReject = hasRejection(response.text);
+  const responseAgreesThisAmount = mentionsValue(response.text, input.amount).some(
+    (mention) => mention.currency === null || mention.currency === input.currency,
+  );
+  if (responseReject && (!responseFirm || !responseAgreesThisAmount)) {
+    return {
+      kind: "block",
+      reason: `${input.owner} turned this down ("${snippet(response.text)}").`,
+    };
+  }
+  if (responseFirm && hedgeOf(response.text) !== "hard") {
+    return {
+      kind: "proven",
+      sentence: `${input.quoteTurn.speakerName} named this price and ${input.owner} agreed to pay it.`,
+    };
+  }
+  if (isWeakAcknowledgement(response.text)) {
+    return {
+      kind: "look",
+      reason: `${input.owner} only acknowledged this ("${snippet(response.text)}"). That is not a clear yes, so it needs a look.`,
+    };
+  }
+  return {
+    kind: "block",
+    reason: `${input.quoteTurn.speakerName} said this, and ${input.owner} did not agree to pay it.`,
+  };
+}
+
+export function checkDraft(input: CheckInput): CheckResult {
+  const { draft } = input;
+  const owner = input.owner.trim() || "The owner";
+  const blocking: string[] = [];
+  const looks: string[] = [];
+  const amount = normalizeAmount(draft.amount);
+  const currency = normalizeCurrency(draft.currency);
+
+  if (amount === null) {
+    blocking.push("The amount is not a positive number of money, so it cannot be paid.");
+  }
+  if (currency === null) {
+    blocking.push("The currency is not a three-letter code such as USD.");
+  }
+  if (draft.payee.trim().length === 0) {
+    blocking.push("The draft does not name a payee.");
+  }
+
+  const quotes = draft.quotes.map((quote) => quote.trim()).filter((quote) => quote.length > 0);
+  if (quotes.length === 0) {
+    blocking.push("The draft does not include a quote from the transcript.");
+    return result(draft.id, "Blocked", blocking);
+  }
+
+  const turns = parseTranscript(input.transcript, input.owner);
+  const located: LocatedQuote[] = [];
+  for (const quote of quotes) {
+    if (!input.transcript.includes(quote)) {
+      blocking.push(
+        `This quote does not appear word for word in the transcript: "${snippet(quote)}".`,
+      );
+      continue;
+    }
+    const turn = turnContaining(turns, quote);
+    if (turn === null) {
+      blocking.push(
+        "This quote does not sit inside one speaker's turn, so who said it is unclear.",
+      );
+      continue;
+    }
+    located.push({ quote, turn });
+  }
+
+  if (located.length === 0) {
+    return result(draft.id, "Blocked", blocking);
+  }
+
+  const amountValue = amount === null ? Number.NaN : Number(amount);
+  const withAmount = located.filter((item) => mentionsValue(item.quote, amountValue).length > 0);
+  const pool = withAmount.length > 0 ? withAmount : located;
+  const supporting =
+    pool.find((item) => {
+      if (!item.turn.isOwner || !Number.isFinite(amountValue)) return false;
+      const sentence = sentenceContaining(item.quote, amountValue);
+      return hasFirmAgreement(sentence) && hedgeOf(sentence) !== "hard";
+    }) ?? pool[0];
+
+  if (supporting === undefined) {
+    return result(draft.id, "Blocked", blocking);
+  }
+
+  if (amount === null || currency === null || !Number.isFinite(amountValue)) {
+    return result(draft.id, "Blocked", blocking);
+  }
+
+  const hits = mentionsValue(supporting.quote, amountValue);
+  if (hits.length === 0) {
+    if (isQuantityOrDate(supporting.quote, amountValue)) {
+      blocking.push(
+        `The quote mentions ${amountValue}, but not as a price.`,
+      );
+    } else {
+      blocking.push(
+        `The quote never mentions ${amount}. It does not support that amount.`,
+      );
+    }
+  } else {
+    const stated = hits.filter((hit) => hit.currency !== null);
+    const matching = stated.filter((hit) => hit.currency === currency);
+    const statedCurrency = stated[0]?.currency;
+    if (matching.length > 0) {
+      // The quote names this amount in this currency.
+    } else if (statedCurrency !== undefined) {
+      blocking.push(
+        `The quote gives this amount in ${statedCurrency}, not ${currency}.`,
+      );
+    } else {
+      looks.push(
+        `The quote mentions ${amount} but never names a currency, so ${currency} is a guess. This needs a look from the owner.`,
+      );
+    }
+  }
+
+  const namedInQuote = concernsPayee(supporting.quote, draft.payee);
+  const saidByPayee =
+    !supporting.turn.isOwner && concernsPayee(supporting.turn.speaker, draft.payee);
+  const addressed =
+    supporting.turn.isOwner &&
+    /\b(you|your)\b/i.test(supporting.quote) &&
+    (() => {
+      const other = previousOtherSpeaker(turns, supporting.turn);
+      return other !== null && concernsPayee(other.speaker, draft.payee);
+    })();
+  if (!namedInQuote && !saidByPayee && !addressed) {
+    blocking.push(
+      `The quote does not name ${draft.payee.trim()}, and it is not said to them.`,
+    );
+  }
+
+  const attribution = attributeQuote({
+    turns,
+    quoteTurn: supporting.turn,
+    quote: supporting.quote,
+    owner,
+    amount: amountValue,
+    currency,
+  });
+  if (attribution.kind === "block") blocking.push(attribution.reason);
+  if (attribution.kind === "look") looks.push(attribution.reason);
+
+  const changed = laterProblem({
+    turns,
+    quoteTurn: supporting.turn,
+    owner,
+    payee: draft.payee,
+    amount: amountValue,
+    currency,
+    amountText: moneyText(amount, currency),
+  });
+  if (changed !== null) blocking.push(changed);
+
+  if (blocking.length > 0) return result(draft.id, "Blocked", blocking);
+  if (looks.length > 0) return result(draft.id, "Needs a look", looks);
+
+  const who = addressed
+    ? `${owner} said they would pay "you", which here is ${draft.payee.trim()}.`
+    : attribution.kind === "proven"
+      ? attribution.sentence
+      : `${owner} agreed to this payment.`;
+  return result(draft.id, "Proven", [
+    `${who} The amount is ${moneyText(amount, currency)}, and nothing later in the meeting changes or cancels it.`,
+  ]);
+}
+
+function duplicateReason(draft: PaymentDraft): string {
+  return `This repeats an earlier draft to pay ${draft.payee} ${draft.amount} ${draft.currency}, so it would pay twice.`;
+}
+
+function verdictRank(verdict: Verdict): number {
+  if (verdict === "Proven") return 2;
+  if (verdict === "Needs a look") return 1;
+  return 0;
+}
+
+/**
+ * Check every draft, then block a second copy of a payment that is already
+ * Proven or waiting on a look. One agreement should not be paid twice.
+ */
+export function checkDrafts(input: CheckBatchInput): CheckResult[] {
+  const results = input.drafts.map((draft) =>
+    checkDraft({
+      transcript: input.transcript,
+      owner: input.owner,
+      draft,
+    }),
+  );
+  const keeper = new Map<string, number>();
+  input.drafts.forEach((draft, index) => {
+    const current = results[index];
+    if (current === undefined || current.verdict === "Blocked") return;
+    const key = paymentKey(draft);
+    const previous = keeper.get(key);
+    if (previous === undefined || verdictRank(current.verdict) > verdictRank(results[previous]?.verdict ?? "Blocked")) {
+      keeper.set(key, index);
+    }
+  });
+  return results.map((current, index) => {
+    if (current.verdict === "Blocked") return current;
+    const draft = input.drafts[index];
+    if (draft === undefined) return current;
+    if (keeper.get(paymentKey(draft)) === index) return current;
+    return result(draft.id, "Blocked", [duplicateReason(draft)]);
+  });
+}

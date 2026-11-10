@@ -5,3 +5,5 @@ dist/
 .env.*
 !.env.example
 coverage/
+eval/logs/
+eval/dist/
