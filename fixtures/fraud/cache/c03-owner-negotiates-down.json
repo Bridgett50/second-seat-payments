@@ -1,0 +1,21 @@
+{
+  "fixtureId": "c03-owner-negotiates-down",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:02.244Z",
+  "drafts": [
+    {
+      "id": "c03-owner-negotiates-down-1",
+      "payee": "Moss Plumbing",
+      "amount": "500.00",
+      "currency": "USD",
+      "purpose": "sink install",
+      "due": "",
+      "quotes": [
+        "The install is $650 with disposal.",
+        "$500.",
+        "Okay, I'll pay Moss Plumbing $500 for the sink install."
+      ]
+    }
+  ]
+}

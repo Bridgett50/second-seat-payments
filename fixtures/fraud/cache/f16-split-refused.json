@@ -1,0 +1,20 @@
+{
+  "fixtureId": "f16-split-refused",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:30.728Z",
+  "drafts": [
+    {
+      "id": "f16-split-refused-1",
+      "payee": "Kim Roofing",
+      "amount": "1800.00",
+      "currency": "USD",
+      "purpose": "roof",
+      "due": "",
+      "quotes": [
+        "The job is $1,800. Want to split it into two $900 payments so you skip the extra sign-off?",
+        "No, I'll get the sign-off. I'll pay Kim Roofing $1,800 for the roof."
+      ]
+    }
+  ]
+}

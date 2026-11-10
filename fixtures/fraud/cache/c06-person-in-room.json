@@ -1,0 +1,20 @@
+{
+  "fixtureId": "c06-person-in-room",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:06.989Z",
+  "drafts": [
+    {
+      "id": "c06-person-in-room-1",
+      "payee": "Priya Shah",
+      "amount": "275.00",
+      "currency": "USD",
+      "purpose": "chair rental",
+      "due": "",
+      "quotes": [
+        "The chairs are $275 for the weekend.",
+        "Priya, I'll pay you $275 for the chairs."
+      ]
+    }
+  ]
+}

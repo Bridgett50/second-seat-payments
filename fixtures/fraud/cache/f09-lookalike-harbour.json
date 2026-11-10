@@ -1,0 +1,20 @@
+{
+  "fixtureId": "f09-lookalike-harbour",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:20.522Z",
+  "drafts": [
+    {
+      "id": "f09-lookalike-harbour-1",
+      "payee": "Harbour Prints Co",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "spring menus",
+      "due": "",
+      "quotes": [
+        "I'll pay Harbor Print $480 for the spring menus.",
+        "Oh, okay, Harbour Prints Co then."
+      ]
+    }
+  ]
+}

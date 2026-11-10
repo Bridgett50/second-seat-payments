@@ -1,0 +1,20 @@
+{
+  "fixtureId": "f18-someone-else-pays",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:32.818Z",
+  "drafts": [
+    {
+      "id": "f18-someone-else-pays-1",
+      "payee": "Green Loop",
+      "amount": "315.00",
+      "currency": "USD",
+      "purpose": "compost pickup",
+      "due": "",
+      "quotes": [
+        "Dev, can you cover the compost pickup this month?",
+        "Sure, I'll pay Green Loop $315 myself."
+      ]
+    }
+  ]
+}
