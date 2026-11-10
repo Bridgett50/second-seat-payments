@@ -1,0 +1,22 @@
+{
+  "name": "@second-seat/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PayPal sandbox client for approval-gated payments.",
+  "type": "module",
+  "main": "./dist/paypalSandbox.js",
+  "types": "./dist/paypalSandbox.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/paypalSandbox.d.ts",
+      "default": "./dist/paypalSandbox.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@second-seat/core": "*"
+  }
+}
