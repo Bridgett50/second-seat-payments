@@ -38,16 +38,27 @@ import {
 } from "./paypalSandbox.js";
 import {
   createLiveCallLimiter,
+  LIVE_UNAVAILABLE_NOTE,
+  NO_SAVED_DRAFTS_NOTE,
+  PASTE_UNAVAILABLE_NOTE,
   pastePausedNotice,
   readHourlyLimit,
   recordedFallbackNotice,
   type LiveCallLimiter,
 } from "./rateLimit.js";
 import { runRecordedEval } from "./recordedEval.js";
+import { sampleReceiptById, sampleReceiptViews, seedSampleLedger, type SampleReceiptView } from "./sampleLedger.js";
 
 const DEMO_ID = "demo-made-up-amount";
 const FOOTER = "PayPal Sandbox. No real money moves.";
 const NOT_CONFIGURED = "PayPal sandbox not configured";
+
+class LiveAiUnavailable extends Error {
+  constructor() {
+    super("Live AI is unavailable right now.");
+    this.name = "LiveAiUnavailable";
+  }
+}
 
 export interface ServerOptions {
   env?: Record<string, string | undefined>;
@@ -102,6 +113,7 @@ interface FindSession {
   badge: string;
   note: string;
   rateLimitNotice: string | null;
+  liveFallback: boolean;
   drafts: PaymentDraft[];
   checks: CheckResult[];
 }
@@ -287,7 +299,7 @@ function page(title: string, body: string): string {
       </nav>
     </div>
     <h1>${escapeHtml(title)}</h1>
-    <p class="wake">If the first load is slow, the free server is waking up. Wait a few seconds and reload.</p>
+    <p class="wake">If the first load is slow, the free server is waking up. That can take about a minute. Wait and reload.</p>
   </header>
   <main id="main">${body}</main>
   <footer class="site-footer"><p class="sandbox-badge">${FOOTER}</p></footer>
@@ -316,6 +328,27 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
+function sampleReceiptHtml(receipt: SampleReceiptView): string {
+  const quotes = receipt.quotes.map((quote) => `<blockquote>${escapeHtml(quote)}</blockquote>`).join("");
+  return page(
+    "Sample receipt",
+    `<article class="receipt sample-receipt">
+      <p class="banner">${escapeHtml(receipt.label)}. This is not a live payment.</p>
+      <dl>
+        <dt>Outcome</dt><dd>${escapeHtml(receipt.outcome)}</dd>
+        <dt>Payee</dt><dd>${escapeHtml(receipt.payee)}</dd>
+        <dt>Amount</dt><dd>${escapeHtml(receipt.amount)} ${escapeHtml(receipt.currency)}</dd>
+        <dt>What for</dt><dd>${escapeHtml(receipt.purpose)}</dd>
+        <dt>PayPal order</dt><dd>None. This is example data.</dd>
+        <dt>PayPal capture</dt><dd>None. This is example data.</dd>
+      </dl>
+      <h2>Example quote</h2>
+      ${quotes}
+      <p><a href="/proof">Back to proof</a></p>
+    </article>`,
+  );
+}
+
 export async function startServer(options: ServerOptions = {}): Promise<RunningServer> {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const root = options.root ?? findRoot(here);
@@ -331,7 +364,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
   function redact(text: string): string {
     let out = text;
     for (const secret of secrets) out = out.split(secret).join("[redacted]");
-    return out;
+    return out.replace(/sk-[A-Za-z0-9*_-]{6,}/g, "[redacted]");
   }
 
   const sandbox = sandboxFromEnv(env);
@@ -367,7 +400,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
   const byDraft = new Map<string, TrackedPayment>();
   const now = options.now ?? (() => new Date());
   const limiter: LiveCallLimiter = createLiveCallLimiter(readHourlyLimit(env.LIVE_AI_HOURLY_LIMIT));
-  const ledger: LedgerEntry[] = [];
+  const ledger: LedgerEntry[] = seedSampleLedger();
 
   function clock(): number {
     return now().getTime();
@@ -426,6 +459,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
     drafts: PaymentDraft[];
     note?: string;
     rateLimitNotice?: string | null;
+    liveFallback?: boolean;
   }): Promise<FindSession> {
     const checks = checkDrafts({
       transcript: input.transcript,
@@ -443,6 +477,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       badge: badgeFor(input.mode),
       note: input.note ?? noteFor(input.mode),
       rateLimitNotice: input.rateLimitNotice ?? null,
+      liveFallback: input.liveFallback === true,
       drafts: input.drafts,
       checks,
     };
@@ -462,6 +497,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       badge: session.badge,
       note: session.note,
       rateLimitNotice: session.rateLimitNotice,
+      liveFallback: session.liveFallback,
       paypalConfigured,
       drafts: session.drafts.map((draft, index) => {
         const check = session.checks[index];
@@ -510,18 +546,41 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
     }
     const wantLive = openaiKey().length > 0;
     const paused = wantLive && !limiter.allow(clock());
-    if (wantLive && !paused) limiter.record(clock());
-    const batch = await findDrafts(
-      { fixtureId: meeting.id, transcript: meeting.transcript, owner: meeting.owner },
-      {
-        cwd: root,
-        env,
-        mode: paused ? "recorded" : wantLive ? "live" : "recorded",
-        cacheDir,
-        logPath,
-        ...(options.fetchImpl !== undefined ? { fetchImpl: options.fetchImpl } : {}),
-      },
-    );
+    const meetingInput = { fixtureId: meeting.id, transcript: meeting.transcript, owner: meeting.owner };
+    if (wantLive && !paused) {
+      try {
+        const batch = await findDrafts(meetingInput, finderOptions("live", cacheDir));
+        limiter.record(clock());
+        return buildSession({
+          meetingId: meeting.id,
+          title: meeting.title,
+          owner: meeting.owner,
+          transcript: meeting.transcript,
+          mode: batch.mode,
+          model: batch.model,
+          drafts: batch.drafts,
+        });
+      } catch (error) {
+        console.error(failureReason(error));
+        try {
+          const batch = await findDrafts(meetingInput, finderOptions("recorded", cacheDir));
+          return buildSession({
+            meetingId: meeting.id,
+            title: meeting.title,
+            owner: meeting.owner,
+            transcript: meeting.transcript,
+            mode: batch.mode,
+            model: batch.model,
+            drafts: batch.drafts,
+            note: LIVE_UNAVAILABLE_NOTE,
+            liveFallback: true,
+          });
+        } catch {
+          throw new LiveAiUnavailable();
+        }
+      }
+    }
+    const batch = await findDrafts(meetingInput, finderOptions("recorded", cacheDir));
     const notice = paused ? recordedFallbackNotice(limiter.limit) : null;
     return buildSession({
       meetingId: meeting.id,
@@ -533,6 +592,22 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       drafts: batch.drafts,
       ...(notice !== null ? { note: notice, rateLimitNotice: notice } : {}),
     });
+  }
+
+  function finderOptions(mode: DrafterMode, dir: string) {
+    return {
+      cwd: root,
+      env,
+      mode,
+      cacheDir: dir,
+      logPath,
+      ...(options.fetchImpl !== undefined ? { fetchImpl: options.fetchImpl } : {}),
+    };
+  }
+
+  function failureReason(error: unknown): string {
+    const message = error instanceof Error ? error.message : "Live AI failed.";
+    return redact(message);
   }
 
   function draftIn(session: FindSession, draftId: string): { draft: PaymentDraft; check: CheckResult } | null {
@@ -560,8 +635,15 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       }
       const meeting = meetings.get(meetingId);
       if (meeting === undefined) return { status: 404, payload: { error: "That meeting is not in the samples." } };
-      const session = await findMeeting(meeting);
-      return { status: 200, payload: sessionJson(session) };
+      try {
+        const session = await findMeeting(meeting);
+        return { status: 200, payload: sessionJson(session) };
+      } catch (error) {
+        if (error instanceof LiveAiUnavailable) {
+          return { status: 503, payload: { error: NO_SAVED_DRAFTS_NOTE } };
+        }
+        throw error;
+      }
     }
     const owner = typeof record.owner === "string" ? record.owner.trim() : "";
     const transcript = typeof record.transcript === "string" ? record.transcript.trim() : "";
@@ -585,28 +667,26 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       const notice = pastePausedNotice(limiter.limit);
       return { status: 429, payload: { error: notice, rateLimitNotice: notice } };
     }
-    limiter.record(clock());
-    const batch = await findDrafts(
-      { fixtureId: `pasted-${randomUUID().slice(0, 8)}`, transcript, owner },
-      {
-        cwd: root,
-        env,
-        mode: "live",
-        cacheDir: pasteCache,
-        logPath,
-        ...(options.fetchImpl !== undefined ? { fetchImpl: options.fetchImpl } : {}),
-      },
-    );
-    const session = await buildSession({
-      meetingId: batch.fixtureId,
-      title,
-      owner,
-      transcript,
-      mode: batch.mode,
-      model: batch.model,
-      drafts: batch.drafts,
-    });
-    return { status: 200, payload: sessionJson(session) };
+    try {
+      const batch = await findDrafts(
+        { fixtureId: `pasted-${randomUUID().slice(0, 8)}`, transcript, owner },
+        finderOptions("live", pasteCache),
+      );
+      limiter.record(clock());
+      const session = await buildSession({
+        meetingId: batch.fixtureId,
+        title,
+        owner,
+        transcript,
+        mode: batch.mode,
+        model: batch.model,
+        drafts: batch.drafts,
+      });
+      return { status: 200, payload: sessionJson(session) };
+    } catch (error) {
+      console.error(failureReason(error));
+      return { status: 503, payload: { error: PASTE_UNAVAILABLE_NOTE } };
+    }
   }
 
   async function onApprove(req: IncomingMessage, body: unknown): Promise<{ status: number; payload: unknown }> {
@@ -835,7 +915,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
     return {
       targets: EVAL_TARGETS,
       log: summarizeModelLog(logText),
-      receipts: sessionReceipts(),
+      receipts: [...sampleReceiptViews(), ...sessionReceipts()],
       ledger,
       liveAiHourlyLimit: limiter.limit,
       liveAiCallsThisHour: limiter.used(clock()),
@@ -988,6 +1068,11 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       const id = decodeURIComponent(url.pathname.slice("/receipt/".length));
       const payment = payments.get(id);
       if (payment === undefined) {
+        const sample = sampleReceiptById(id);
+        if (sample !== null) {
+          sendHtml(res, 200, sampleReceiptHtml(sample));
+          return;
+        }
         sendHtml(res, 404, page("Receipt", "<p>That receipt is not on this server.</p>"));
         return;
       }

@@ -10,6 +10,8 @@ Second Seat turns what a small-business owner agrees to in a meeting into PayPal
 | Proof page | Rerun the eval yourself. | `LIVE_DEMO_URL/proof` — **TODO:** same host, path `/proof`. |
 | Run locally | Three commands, then open the page. | [The three commands](#run-locally) |
 
+The free host may take about a minute to wake up on the first visit.
+
 **So far:** on the recorded replay of the live gpt-4o-mini run from November 9, the checker lets **16/16** firm payments reach approval and **0** bad payments through. AI alone was also 16/16 on the firm payments, and it got **one** draft wrong: logo edits, where Helen says "I'll pay Nico Alvarez 90 for the logo edits by Thursday" and never names a currency. The model guessed USD. The checker marked that draft Needs a look, and it did not reach approval. Before the checker learned to read the offer behind an owner's short yes, it wrongly blocked Alto Dairy: the draft quoted only "Deal. I'll pay that on Tuesday," which does not contain the amount. The €150 is in Ben's previous line. That payment is Proven in the recorded run.
 
 **The catch we're proudest of.** Helen never names a currency. The quote is "I'll pay Nico Alvarez 90 for the logo edits by Thursday." Guessing USD is not proof, so the checker holds the draft for a look. There is a separate stand-in card, written by hand, that invents $875 while quoting "I'll pay Harbor Print $200 for the extra posters." That one is Blocked, and the card has no Approve button.
@@ -66,7 +68,7 @@ The model is not trusted to decide that a payment is real. Every claim is checke
 
 Text in a transcript that talks to the checker is a warning, not an instruction. "Assistant, ignore the rules", "approve all of these", and "this payment is pre-approved" are that kind of line. Any draft from a meeting that contains one is at least Needs a look. A draft whose only support is such a line is Blocked. Two hand-written meetings cover this. They are not part of the recorded 16/16, because there was no live call for them.
 
-Live calls are capped by `LIVE_AI_HOURLY_LIMIT` (default 20 per hour for the whole server). Past that, sample meetings fall back to the saved drafts and the page says so. A pasted transcript has no saved copy, so it is not sent.
+Live calls are capped by `LIVE_AI_HOURLY_LIMIT` (default 20 per hour for the whole server). Only a successful call counts toward that cap. Past the cap, or when a live call fails, sample meetings fall back to the saved drafts and the page says so. A pasted transcript has no saved copy, so it is not sent.
 
 ## PayPal
 
@@ -130,11 +132,11 @@ PayPal checkout needs a sandbox personal account. No real money moves.
 
 ## Limits
 
-- The public demo is a free web service. The first request after a quiet stretch can take a few seconds while it wakes. The page says so.
-- Receipts, the decision log, and the hash chain live in memory. A restart clears them.
+- The public demo is a free web service. The first request after a quiet stretch may take about a minute while it wakes. The page says so.
+- Live receipts and new ledger rows are kept in memory. A restart clears them. A labeled sample set loads again so the proof page is not empty. Those rows are examples, not live payments.
 - The model log on disk is local. On a free host the disk is ephemeral, so token totals reset too.
 - Without an OpenAI key, the 15 sample meetings replay the saved run. A pasted transcript needs a key. The two meetings that talk to the checker are hand-written stand-ins.
-- Live calls stop after the hourly cap and the page says it switched to recorded output. That cap is there to protect a small usage budget.
+- Live calls stop after the hourly cap and the page says it switched to recorded output. Failed calls are not counted. That cap is there to protect a small usage budget.
 - PayPal stays in sandbox. This client cannot be pointed at live PayPal.
 - The stand-in shows mistakes on purpose, including the made-up $875. Do not describe those drafts as model output.
 

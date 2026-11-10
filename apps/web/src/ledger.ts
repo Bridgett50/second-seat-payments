@@ -3,12 +3,15 @@
  * Each entry names the previous entry's SHA-256. Verify walks the chain
  * and recomputes every hash. Entries hold the draft, the quotes, the
  * decision, and PayPal ids. They do not hold secrets.
+ * Startup loads labeled example rows onto this chain. Live decisions
+ * from the server session are appended after them.
  */
 import { createHash } from "node:crypto";
 
 export const LEDGER_GENESIS = "0".repeat(64);
 
-export type LedgerDecision = "approve" | "reject" | "capture";
+/** `needs-a-look` is used only on the startup examples, for a draft that was not sent to PayPal. */
+export type LedgerDecision = "approve" | "reject" | "capture" | "needs-a-look";
 
 export interface LedgerDraft {
   id: string;
@@ -28,6 +31,10 @@ export interface LedgerEntry {
   paypalOrderId: string | null;
   paypalCaptureId: string | null;
   hash: string;
+  /** Startup example. Omitted on decisions made in this server session. */
+  sample?: boolean;
+  label?: string;
+  outcome?: string;
 }
 
 export interface LedgerInput {

@@ -144,6 +144,10 @@ function renderResults(payload) {
   } else if (payload.note) {
     const note = document.createElement("p");
     note.textContent = payload.note;
+    if (payload.liveFallback) {
+      note.className = "fallback-note";
+      note.setAttribute("role", "status");
+    }
     head.append(note);
   }
   if (payload.model) {

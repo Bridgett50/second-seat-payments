@@ -20,7 +20,7 @@
       <p class="lead">
         Targets were set before the results. This page fills every count from the server: the recorded eval, the model-call log, and the receipts captured in this session.
       </p>
-      <p class="wake">If the first load is slow, the free server is waking up. Wait a few seconds and reload.</p>
+      <p class="wake">If the first load is slow, the free server is waking up. That can take about a minute. Wait and reload.</p>
     </header>
     <main>
       <p id="proof-error" class="error" role="alert" hidden></p>
@@ -52,7 +52,7 @@
       </section>
       <section class="panel" aria-labelledby="ledger-heading">
         <h2 id="ledger-heading">Decision ledger</h2>
-        <p>Each approve, reject, and capture is chained to the hash of the one before it. Verify recomputes the chain in code.</p>
+        <p>Each approve, reject, and capture is chained to the hash of the one before it. Verify recomputes the chain in code. Rows marked Sample are example data loaded at startup, not live payments. Live decisions from this session are listed after them.</p>
         <div class="proof-actions">
           <button id="verify-ledger" type="button">Verify chain</button>
         </div>
@@ -60,7 +60,8 @@
         <div id="ledger" class="table-wrap"></div>
       </section>
       <section class="panel" aria-labelledby="receipts-heading">
-        <h2 id="receipts-heading">Receipts captured this session</h2>
+        <h2 id="receipts-heading">Receipts</h2>
+        <p>Sample receipts are example data loaded at startup. Live receipts from this session are listed after them.</p>
         <ul id="receipts"></ul>
       </section>
     </main>

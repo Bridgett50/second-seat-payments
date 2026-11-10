@@ -58,6 +58,7 @@ describe("payments page", () => {
       expect(home.text).toContain("Find payments");
       expect(home.text).toContain('href="/proof"');
       expect(home.text).toContain("free server is waking up");
+      expect(home.text).toContain("about a minute");
       const meetings = await request(port, "/api/meetings");
       const samples = meetings.json.samples as unknown[];
       expect(samples.length).toBeGreaterThanOrEqual(15);

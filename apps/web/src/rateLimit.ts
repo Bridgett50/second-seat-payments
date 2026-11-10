@@ -55,3 +55,12 @@ export function recordedFallbackNotice(limit: number): string {
 export function pastePausedNotice(limit: number): string {
   return `Live AI is paused after ${limit} calls this hour, so the usage cap stays protected. A pasted transcript has no saved recording, so it was not sent.`;
 }
+
+export const LIVE_UNAVAILABLE_NOTE =
+  "Live AI unavailable right now, showing saved results from a real earlier run.";
+
+export const PASTE_UNAVAILABLE_NOTE =
+  "Live AI is unavailable right now. A pasted transcript has no saved result, so it could not be checked.";
+
+export const NO_SAVED_DRAFTS_NOTE =
+  "Live AI is unavailable right now, and there is no saved result for this meeting.";

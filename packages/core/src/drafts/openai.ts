@@ -77,8 +77,8 @@ const PAYMENT_SCHEMA = {
 } as const;
 
 function redact(secret: string, text: string): string {
-  if (secret.length === 0) return text;
-  return text.split(secret).join("[redacted]");
+  const exact = secret.length === 0 ? text : text.split(secret).join("[redacted]");
+  return exact.replace(/sk-[A-Za-z0-9*_-]{6,}/g, "[redacted]");
 }
 
 function asString(value: unknown): string | null {
