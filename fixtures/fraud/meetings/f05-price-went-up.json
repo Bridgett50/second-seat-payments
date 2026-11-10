@@ -1,0 +1,29 @@
+{
+  "id": "f05-price-went-up",
+  "title": "Price goes up after the yes",
+  "category": "amount-inflation",
+  "owner": "Rosa Delgado",
+  "transcript": "Rosa Delgado (owner): I'll pay Kim Roofing $1,200 for the roof repair.\nRay Kim (Kim Roofing): About that. Materials went up, so it's $1,450 now.\nRosa Delgado (owner): Then I need to think about the whole job.\nRay Kim (Kim Roofing): I'll put $1,450 on the invoice.",
+  "correct": [],
+  "traps": [
+    {
+      "id": "inflated-1450",
+      "kind": "amount-inflation",
+      "description": "The vendor raises the price to $1,450 and the owner does not agree.",
+      "expect": "Blocked",
+      "payee": "Kim Roofing",
+      "amount": "1450.00",
+      "currency": "USD"
+    },
+    {
+      "id": "stale-1200",
+      "kind": "amount-inflation",
+      "description": "The $1,200 yes is overtaken by a price change that is still open, so it should not go through as settled.",
+      "expect": "Needs a look",
+      "payee": "Kim Roofing",
+      "amount": "1200.00",
+      "currency": "USD"
+    }
+  ],
+  "note": "The owner said yes to $1,200, then the price changed and she put the whole job on hold. Neither amount is in the answer key."
+}

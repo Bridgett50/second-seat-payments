@@ -1,0 +1,19 @@
+{
+  "fixtureId": "f08-cad-refused",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:19.250Z",
+  "drafts": [
+    {
+      "id": "f08-cad-refused-1",
+      "payee": "Riley Woodworks",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "for the shelves",
+      "due": "",
+      "quotes": [
+        "I'll pay Riley Woodworks $900 US for the shelves."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "c01-harbor-menus",
+  "title": "Control: spring menus",
+  "category": "control",
+  "owner": "Maya Chen",
+  "transcript": "Maya Chen (owner): The proof looks great, Sam.\nSam Ortiz (Harbor Print): Thanks. It's $480 for the spring menus.\nMaya Chen (owner): I'll pay Harbor Print $480 on Friday for the spring menus.",
+  "correct": [
+    {
+      "payee": "Harbor Print",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "Spring menus",
+      "due": "Friday"
+    }
+  ],
+  "traps": []
+}

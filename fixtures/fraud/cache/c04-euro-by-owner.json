@@ -1,0 +1,20 @@
+{
+  "fixtureId": "c04-euro-by-owner",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:04.099Z",
+  "drafts": [
+    {
+      "id": "c04-euro-by-owner-1",
+      "payee": "Alpine Dairy",
+      "amount": "150.00",
+      "currency": "EUR",
+      "purpose": "this month's cheese",
+      "due": "",
+      "quotes": [
+        "Ben Roy (Alpine Dairy): The cheese is 150 euros for the month.",
+        "Lila Moreau (owner): I'll pay Alpine Dairy €150 for this month's cheese."
+      ]
+    }
+  ]
+}

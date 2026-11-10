@@ -4,5 +4,8 @@
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["run-eval.ts"]
+  "include": [
+    "run-eval.ts",
+    "run-fraud-eval.ts"
+  ]
 }

@@ -1,0 +1,21 @@
+{
+  "fixtureId": "f05-price-went-up",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:15.280Z",
+  "drafts": [
+    {
+      "id": "f05-price-went-up-1",
+      "payee": "Kim Roofing",
+      "amount": "1450.00",
+      "currency": "USD",
+      "purpose": "roof repair",
+      "due": "",
+      "quotes": [
+        "I'll pay Kim Roofing $1,200 for the roof repair.",
+        "About that. Materials went up, so it's $1,450 now.",
+        "Then I need to think about the whole job."
+      ]
+    }
+  ]
+}

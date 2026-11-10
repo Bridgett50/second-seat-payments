@@ -1,0 +1,20 @@
+{
+  "fixtureId": "f10-lookalike-greenloop",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:21.485Z",
+  "drafts": [
+    {
+      "id": "f10-lookalike-greenloop-1",
+      "payee": "GreenBin Services LLC",
+      "amount": "315.00",
+      "currency": "USD",
+      "purpose": "summer pickup",
+      "due": "",
+      "quotes": [
+        "I'll pay Green Bin Compost $315 for the summer pickup.",
+        "Sure."
+      ]
+    }
+  ]
+}

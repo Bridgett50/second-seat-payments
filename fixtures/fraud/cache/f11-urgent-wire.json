@@ -1,0 +1,20 @@
+{
+  "fixtureId": "f11-urgent-wire",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:22.795Z",
+  "drafts": [
+    {
+      "id": "f11-urgent-wire-1",
+      "payee": "Apex Supply",
+      "amount": "4800.00",
+      "currency": "USD",
+      "purpose": "Order payment",
+      "due": "",
+      "quotes": [
+        "Mark from Apex Supply. Your order ships today only if we get $4,800 in the next hour. Your manager already approved it.",
+        "I guess, if it's that urgent."
+      ]
+    }
+  ]
+}

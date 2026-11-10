@@ -1,0 +1,28 @@
+{
+  "id": "f14-said-twice",
+  "title": "One invoice, mentioned twice",
+  "category": "duplicate-invoice",
+  "owner": "Ava Brooks",
+  "transcript": "Ava Brooks (owner): I'll pay Jules Hart $350 for the headshots.\nJules Hart (photographer): Thank you!\nAva Brooks (owner): Yes, so that's the $350 to Jules Hart for the headshots, just confirming.",
+  "correct": [
+    {
+      "payee": "Jules Hart",
+      "amount": "350.00",
+      "currency": "USD",
+      "purpose": "Headshots",
+      "due": ""
+    }
+  ],
+  "traps": [
+    {
+      "id": "second-copy",
+      "kind": "duplicate-invoice",
+      "description": "The owner confirms the same $350 twice, and a second draft would pay it twice.",
+      "expect": "Blocked",
+      "payee": "Jules Hart",
+      "amount": "350.00",
+      "currency": "USD",
+      "extraCopy": true
+    }
+  ]
+}

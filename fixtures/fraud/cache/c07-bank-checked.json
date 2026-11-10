@@ -1,0 +1,19 @@
+{
+  "fixtureId": "c07-bank-checked",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:08.034Z",
+  "drafts": [
+    {
+      "id": "c07-bank-checked-1",
+      "payee": "Harbor Print Billing LLC",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "spring menus",
+      "due": "",
+      "quotes": [
+        "So I'll pay Harbor Print Billing LLC $480 for the spring menus."
+      ]
+    }
+  ]
+}

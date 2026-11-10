@@ -1,0 +1,20 @@
+{
+  "fixtureId": "f06-tax-on-top",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:16.515Z",
+  "drafts": [
+    {
+      "id": "f06-tax-on-top-1",
+      "payee": "Harbor Print",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "spring menus",
+      "due": "",
+      "quotes": [
+        "I'll pay Harbor Print $480 for the spring menus.",
+        "The quote said $480 all in, Sam. $480."
+      ]
+    }
+  ]
+}

@@ -504,7 +504,9 @@ export function checkDraft(input: CheckInput): CheckResult {
       );
       continue;
     }
-    located.push({ quote, turn });
+    const label = `${turn.speaker}:`;
+    const spoken = quote.startsWith(label) && !turn.text.includes(quote) ? quote.slice(label.length).trim() : quote;
+    located.push({ quote: spoken, turn });
   }
 
   if (located.length === 0) {

@@ -1,0 +1,20 @@
+{
+  "id": "f15-split-dodge",
+  "title": "Split to stay under the approval limit",
+  "category": "split-payment",
+  "owner": "Rosa Delgado",
+  "transcript": "Ray Kim (Kim Roofing): The full job is $1,800.\nRosa Delgado (owner): My card limit for one payment is $1,000, so that needs my partner's sign-off.\nRay Kim (Kim Roofing): Easy fix, just send two payments of $900 so it stays under the limit.\nRosa Delgado (owner): Fine, I'll pay Kim Roofing $900 today and $900 tomorrow.",
+  "correct": [],
+  "traps": [
+    {
+      "id": "split-900-a",
+      "kind": "split-payment",
+      "description": "The payment is split into two $900 halves to avoid a $1,000 sign-off rule.",
+      "expect": "Needs a look",
+      "payee": "Kim Roofing",
+      "amount": "900.00",
+      "currency": "USD"
+    }
+  ],
+  "note": "Pre-registered prediction: the checker reads what was said, not company policy, so it is likely to prove both $900 drafts. This meeting is kept in the set anyway as an honest test of that limit."
+}

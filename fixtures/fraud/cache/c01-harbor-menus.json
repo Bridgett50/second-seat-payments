@@ -1,0 +1,20 @@
+{
+  "fixtureId": "c01-harbor-menus",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:36:58.241Z",
+  "drafts": [
+    {
+      "id": "c01-harbor-menus-1",
+      "payee": "Harbor Print",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "spring menus",
+      "due": "Friday",
+      "quotes": [
+        "It's $480 for the spring menus.",
+        "I'll pay Harbor Print $480 on Friday for the spring menus."
+      ]
+    }
+  ]
+}

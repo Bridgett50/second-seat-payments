@@ -373,3 +373,33 @@ describe("payments page", () => {
     });
   });
 });
+
+describe("bank-change sample and fraud eval", () => {
+  it("blocks the redirected $480 and has no approve path", async () => {
+    await withServer({}, async (port) => {
+      const found = await post(port, "/api/find", { meetingId: "00-harbor-bank-change" });
+      expect(found.status).toBe(200);
+      expect(found.json.mode).toBe("recorded");
+      const drafts = draftsOf(found.json);
+      expect(drafts.length).toBeGreaterThan(0);
+      for (const draft of drafts) {
+        if (draft.payee === "Harbor Print Billing LLC") expect(draft.verdict).toBe("Blocked");
+      }
+      const redirected = drafts.find((draft) => draft.payee === "Harbor Print Billing LLC");
+      expect(redirected?.amount).toBe("480.00");
+      const approved = await post(port, "/api/approve", { findId: found.json.findId, draftId: redirected?.id });
+      expect(approved.status).toBe(400);
+    });
+  });
+
+  it("replays the recorded fraud eval without calling OpenAI", async () => {
+    await withServer({ fetchImpl: () => Promise.reject(new Error("fetch should not run")) }, async (port) => {
+      const run = await post(port, "/api/proof/fraud-eval", {});
+      expect(run.status).toBe(200);
+      expect(run.json.mode).toBe("recorded");
+      expect(run.json.meetingCount).toBe(25);
+      expect(run.json.controlCount).toBe(7);
+      expect(run.text).toContain("did not call OpenAI");
+    });
+  });
+});

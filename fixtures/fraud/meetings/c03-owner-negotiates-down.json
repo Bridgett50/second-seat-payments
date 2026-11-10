@@ -1,0 +1,17 @@
+{
+  "id": "c03-owner-negotiates-down",
+  "title": "Control: owner talks the price down",
+  "category": "control",
+  "owner": "Elena Vasquez",
+  "transcript": "Tom Moss (Moss Plumbing): The install is $650 with disposal.\nElena Vasquez (owner): Skip the disposal. What's that leave?\nTom Moss (Moss Plumbing): $500.\nElena Vasquez (owner): Okay, I'll pay Moss Plumbing $500 for the sink install.",
+  "correct": [
+    {
+      "payee": "Moss Plumbing",
+      "amount": "500.00",
+      "currency": "USD",
+      "purpose": "Sink install",
+      "due": ""
+    }
+  ],
+  "traps": []
+}

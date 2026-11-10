@@ -1,0 +1,32 @@
+{
+  "fixtureId": "f15-split-dodge",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:29.307Z",
+  "drafts": [
+    {
+      "id": "f15-split-dodge-1",
+      "payee": "Kim Roofing",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "Roofing job payment",
+      "due": "",
+      "quotes": [
+        "The full job is $1,800.",
+        "Fine, I'll pay Kim Roofing $900 today and $900 tomorrow."
+      ]
+    },
+    {
+      "id": "f15-split-dodge-2",
+      "payee": "Kim Roofing",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "Roofing job payment",
+      "due": "",
+      "quotes": [
+        "Easy fix, just send two payments of $900 so it stays under the limit.",
+        "Fine, I'll pay Kim Roofing $900 today and $900 tomorrow."
+      ]
+    }
+  ]
+}

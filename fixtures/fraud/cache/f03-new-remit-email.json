@@ -1,0 +1,20 @@
+{
+  "fixtureId": "f03-new-remit-email",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:11.842Z",
+  "drafts": [
+    {
+      "id": "f03-new-remit-email-1",
+      "payee": "KR Payments Inc",
+      "amount": "1200.00",
+      "currency": "USD",
+      "purpose": "Roof payment",
+      "due": "next week",
+      "quotes": [
+        "I'll pay Kim Roofing $1,200 when the roof is done next week.",
+        "Got it, KR Payments Inc, $1,200."
+      ]
+    }
+  ]
+}

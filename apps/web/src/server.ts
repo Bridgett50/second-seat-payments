@@ -19,6 +19,8 @@ import {
   EVAL_TARGETS,
   findDrafts,
   recordedTargetsMet,
+  FRAUD_EVAL_TARGETS,
+  runFraudEval,
   type CheckResult,
   type DrafterMode,
   type PaymentDraft,
@@ -89,7 +91,7 @@ interface SampleMeeting {
   kind: "sample" | "stand-in";
   note: string;
   /** Hand-written drafts. They are not replayed as recorded model output. */
-  set?: "stand-in";
+  set?: "stand-in" | "fraud-sample";
   handWritten?: boolean;
 }
 
@@ -987,6 +989,18 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
         targets: EVAL_TARGETS,
         targetsMet: recordedTargetsMet(result.report),
         report: result.report,
+      });
+      return;
+    }
+    if (method === "POST" && url.pathname === "/api/proof/fraud-eval") {
+      const run = await runFraudEval(root, "recorded");
+      sendJson(res, 200, {
+        label: "Recorded replay of the live gpt-4o-mini fraud eval run. This run did not call OpenAI.",
+        mode: run.mode,
+        model: run.model,
+        recordedAt: run.recordedAt,
+        targets: FRAUD_EVAL_TARGETS,
+        ...run.result,
       });
       return;
     }

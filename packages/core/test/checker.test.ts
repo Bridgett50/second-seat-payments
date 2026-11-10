@@ -768,3 +768,35 @@ describe("lines that talk to the checker are not instructions", () => {
     expect(result.reasons[0]).toMatch(/talks to the checker/);
   });
 });
+
+describe("checker: a quote that includes the speaker label", () => {
+  const transcript = [
+    "Ben Roy (Alpine Dairy): The cheese is 150 euros for the month.",
+    "Lila Moreau (owner): I'll pay Alpine Dairy €150 for this month's cheese.",
+  ].join("\n");
+
+  it("still finds the turn and proves the owner's own words", () => {
+    const item = draft({
+      id: "cheese",
+      payee: "Alpine Dairy",
+      amount: "150.00",
+      currency: "EUR",
+      quotes: [
+        "Ben Roy (Alpine Dairy): The cheese is 150 euros for the month.",
+        "Lila Moreau (owner): I'll pay Alpine Dairy €150 for this month's cheese.",
+      ],
+    });
+    expect(checkDraft({ transcript, owner: "Lila Moreau", draft: item }).verdict).toBe("Proven");
+  });
+
+  it("does not let a label join two turns into one quote", () => {
+    const item = draft({
+      id: "joined",
+      payee: "Alpine Dairy",
+      amount: "150.00",
+      currency: "EUR",
+      quotes: [transcript],
+    });
+    expect(checkDraft({ transcript, owner: "Lila Moreau", draft: item }).verdict).toBe("Blocked");
+  });
+});

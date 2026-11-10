@@ -1,0 +1,30 @@
+{
+  "fixtureId": "c02-two-payments",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:00.341Z",
+  "drafts": [
+    {
+      "id": "c02-two-payments-1",
+      "payee": "Riley Woodworks",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "shelves",
+      "due": "",
+      "quotes": [
+        "I'll pay Riley Woodworks $900 for the shelves."
+      ]
+    },
+    {
+      "id": "c02-two-payments-2",
+      "payee": "Bright Paint Co",
+      "amount": "140.00",
+      "currency": "USD",
+      "purpose": "paint",
+      "due": "",
+      "quotes": [
+        "And I'll pay Bright Paint Co $140 for the paint."
+      ]
+    }
+  ]
+}

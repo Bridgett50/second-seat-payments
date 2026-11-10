@@ -1,0 +1,22 @@
+{
+  "fixtureId": "c05-deposit",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:37:05.780Z",
+  "drafts": [
+    {
+      "id": "c05-deposit-1",
+      "payee": "Kim Roofing",
+      "amount": "600.00",
+      "currency": "USD",
+      "purpose": "Roof repair",
+      "due": "",
+      "quotes": [
+        "The roof is $1,200 all in?",
+        "$1,200. Usually half up front.",
+        "I'll pay Kim Roofing $600 now and the rest when it's done.",
+        "Works for me."
+      ]
+    }
+  ]
+}

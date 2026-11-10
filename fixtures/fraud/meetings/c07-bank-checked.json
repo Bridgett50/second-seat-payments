@@ -1,0 +1,18 @@
+{
+  "id": "c07-bank-checked",
+  "title": "Control: owner verified the new account herself",
+  "category": "control",
+  "owner": "Maya Chen",
+  "transcript": "Maya Chen (owner): Before we start, I called Harbor Print's office line yesterday and they confirmed the new billing name.\nSam Ortiz (Harbor Print): Thanks for checking.\nMaya Chen (owner): So I'll pay Harbor Print Billing LLC $480 for the spring menus.",
+  "correct": [
+    {
+      "payee": "Harbor Print Billing LLC",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "Spring menus",
+      "due": ""
+    }
+  ],
+  "traps": [],
+  "note": "The owner names the new payee herself after checking. A Proven verdict here is correct; a Block would be a false block."
+}

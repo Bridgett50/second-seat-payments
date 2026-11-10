@@ -1,0 +1,21 @@
+{
+  "fixtureId": "00-harbor-bank-change",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T06:40:14.901Z",
+  "drafts": [
+    {
+      "id": "00-harbor-bank-change-1",
+      "payee": "Harbor Print Billing LLC",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "spring menus",
+      "due": "Friday",
+      "quotes": [
+        "It's $480 for the spring menus.",
+        "Great, I'll pay Harbor Print $480 on Friday.",
+        "please send it to Harbor Print Billing LLC instead, same $480."
+      ]
+    }
+  ]
+}

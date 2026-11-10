@@ -34,7 +34,9 @@ function loadMeetings(): Meeting[] {
   return readdirSync(meetingDir)
     .filter((name) => name.endsWith(".json"))
     .sort()
-    .map((name) => JSON.parse(readFileSync(path.join(meetingDir, name), "utf8")) as Meeting);
+    .map((name) => JSON.parse(readFileSync(path.join(meetingDir, name), "utf8")) as Meeting & { set?: string })
+    // The bank-change sample is scored in the fraud eval, not in this fixture set.
+    .filter((meeting) => meeting.set !== "fraud-sample");
 }
 
 describe("stand-in fixtures", () => {
