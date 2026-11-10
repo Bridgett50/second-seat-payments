@@ -16,19 +16,34 @@ import {
   checkDrafts,
   createPaymentGate,
   decideAdmission,
+  EVAL_TARGETS,
   findDrafts,
+  recordedTargetsMet,
   type CheckResult,
   type DrafterMode,
   type PaymentDraft,
   type PaymentGate,
   type PayPalPort,
 } from "@second-seat/core";
+import { appendLedgerEntry, verifyLedger, type LedgerEntry } from "./ledger.js";
+import { summarizeModelLog } from "./modelLog.js";
+import { nextCaptureStep, verifiedCaptured } from "./orderCheck.js";
 import {
   capturePayPalSandboxOrder,
   createPayPalSandboxPort,
+  fetchPayPalSandboxOrder,
   type CapturedPayPalOrder,
+  type PayPalOrderSnapshot,
   type PayPalSandboxConfig,
 } from "./paypalSandbox.js";
+import {
+  createLiveCallLimiter,
+  pastePausedNotice,
+  readHourlyLimit,
+  recordedFallbackNotice,
+  type LiveCallLimiter,
+} from "./rateLimit.js";
+import { runRecordedEval } from "./recordedEval.js";
 
 const DEMO_ID = "demo-made-up-amount";
 const FOOTER = "PayPal Sandbox. No real money moves.";
@@ -42,8 +57,12 @@ export interface ServerOptions {
   /** Test double for the approval gate. When set, PayPal counts as configured. */
   paypalPort?: PayPalPort;
   captureOrder?: (orderId: string) => Promise<CapturedPayPalOrder>;
+  /** Test double for the order lookup that decides whether a return is Captured. */
+  getOrder?: (orderId: string) => Promise<PayPalOrderSnapshot>;
   cacheDir?: string;
   logPath?: string;
+  /** Clock for the audit log and the live-call cap. */
+  now?: () => Date;
 }
 
 export interface RunningServer {
@@ -58,6 +77,9 @@ interface SampleMeeting {
   transcript: string;
   kind: "sample" | "stand-in";
   note: string;
+  /** Hand-written drafts. They are not replayed as recorded model output. */
+  set?: "stand-in";
+  handWritten?: boolean;
 }
 
 interface DemoFile {
@@ -79,8 +101,15 @@ interface FindSession {
   model: string | null;
   badge: string;
   note: string;
+  rateLimitNotice: string | null;
   drafts: PaymentDraft[];
   checks: CheckResult[];
+}
+
+interface AuditEvent {
+  at: string;
+  action: "approve" | "reject" | "capture";
+  detail: string;
 }
 
 interface TrackedPayment {
@@ -97,6 +126,9 @@ interface TrackedPayment {
   purpose: string;
   status: "approved" | "captured" | "rejected" | "cancelled";
   checkoutUrl: string | null;
+  /** PayPal's own status from the last order lookup, when we have one. */
+  paypalStatus: string | null;
+  audit: AuditEvent[];
 }
 
 function findRoot(start: string): string {
@@ -173,7 +205,8 @@ function loadSamples(root: string): { samples: SampleMeeting[]; standIn: SampleM
         owner: parsed.owner,
         transcript: parsed.transcript,
         kind: "sample" as const,
-        note: "",
+        handWritten: parsed.set === "stand-in",
+        note: parsed.set === "stand-in" ? "Hand-written example, not AI output." : "",
       };
     });
   const demo = JSON.parse(readFileSync(path.join(root, "fixtures", "demo", "made-up-amount.json"), "utf8")) as DemoFile;
@@ -245,10 +278,18 @@ function page(title: string, body: string): string {
 </head>
 <body>
   <header class="site-header">
-    <p class="eyebrow">Second Seat</p>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="header-bar">
+      <p class="eyebrow">Second Seat</p>
+      <nav aria-label="Sections">
+        <a href="/">Payments</a>
+        <a href="/proof">Proof</a>
+      </nav>
+    </div>
     <h1>${escapeHtml(title)}</h1>
+    <p class="wake">If the first load is slow, the free server is waking up. Wait a few seconds and reload.</p>
   </header>
-  <main>${body}</main>
+  <main id="main">${body}</main>
   <footer class="site-footer"><p class="sandbox-badge">${FOOTER}</p></footer>
 </body>
 </html>`;
@@ -265,6 +306,7 @@ function presentDraft(draft: PaymentDraft, check: CheckResult): Record<string, u
     quotes: draft.quotes,
     verdict: check.verdict,
     reasons: check.reasons,
+    steps: check.steps,
     ...(check.evidenceQuotes !== undefined ? { evidenceQuotes: check.evidenceQuotes } : {}),
   };
 }
@@ -323,6 +365,48 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
   const payments = new Map<string, TrackedPayment>();
   const byOrder = new Map<string, TrackedPayment>();
   const byDraft = new Map<string, TrackedPayment>();
+  const now = options.now ?? (() => new Date());
+  const limiter: LiveCallLimiter = createLiveCallLimiter(readHourlyLimit(env.LIVE_AI_HOURLY_LIMIT));
+  const ledger: LedgerEntry[] = [];
+
+  function clock(): number {
+    return now().getTime();
+  }
+
+  function stamp(): string {
+    return now().toISOString();
+  }
+
+  function livePaused(): boolean {
+    return openaiKey().length > 0 && !limiter.allow(clock());
+  }
+
+  function recordAudit(payment: TrackedPayment, action: AuditEvent["action"], detail: string): void {
+    payment.audit.push({ at: stamp(), action, detail });
+  }
+
+  function recordLedger(
+    payment: TrackedPayment,
+    decision: LedgerEntry["decision"],
+    captureId: string | null,
+  ): void {
+    ledger.push(
+      appendLedgerEntry(ledger, {
+        at: stamp(),
+        decision,
+        draft: {
+          id: payment.draft.id,
+          payee: payment.payee,
+          amount: payment.amount,
+          currency: payment.currency,
+          purpose: payment.purpose,
+        },
+        quotes: payment.quotes,
+        paypalOrderId: payment.orderId,
+        paypalCaptureId: captureId,
+      }),
+    );
+  }
 
   const cacheDir = options.cacheDir ?? path.join(root, "fixtures", "cache");
   const logPath = options.logPath ?? path.join(root, "eval", "logs", "drafter.log");
@@ -341,6 +425,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
     model: string | null;
     drafts: PaymentDraft[];
     note?: string;
+    rateLimitNotice?: string | null;
   }): Promise<FindSession> {
     const checks = checkDrafts({
       transcript: input.transcript,
@@ -357,6 +442,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       model: input.model,
       badge: badgeFor(input.mode),
       note: input.note ?? noteFor(input.mode),
+      rateLimitNotice: input.rateLimitNotice ?? null,
       drafts: input.drafts,
       checks,
     };
@@ -375,12 +461,13 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       model: session.model,
       badge: session.badge,
       note: session.note,
+      rateLimitNotice: session.rateLimitNotice,
       paypalConfigured,
       drafts: session.drafts.map((draft, index) => {
         const check = session.checks[index];
         return presentDraft(
           draft,
-          check ?? { draftId: draft.id, verdict: "Blocked", reasons: ["The checker did not return a verdict."] },
+          check ?? { draftId: draft.id, verdict: "Blocked", reasons: ["The checker did not return a verdict."], steps: [] },
         );
       }),
     };
@@ -399,18 +486,43 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
         note: "These drafts were written by hand. They are not AI output.",
       });
     }
-    const mode: DrafterMode = openaiKey().length > 0 ? "live" : "recorded";
+    if (meeting.handWritten === true) {
+      const batch = await findDrafts(
+        { fixtureId: meeting.id, transcript: meeting.transcript, owner: meeting.owner },
+        {
+          cwd: root,
+          env,
+          mode: "stand-in",
+          cacheDir,
+          logPath,
+        },
+      );
+      return buildSession({
+        meetingId: meeting.id,
+        title: meeting.title,
+        owner: meeting.owner,
+        transcript: meeting.transcript,
+        mode: "stand-in",
+        model: null,
+        drafts: batch.drafts,
+        note: "These drafts were written by hand. They are not AI output.",
+      });
+    }
+    const wantLive = openaiKey().length > 0;
+    const paused = wantLive && !limiter.allow(clock());
+    if (wantLive && !paused) limiter.record(clock());
     const batch = await findDrafts(
       { fixtureId: meeting.id, transcript: meeting.transcript, owner: meeting.owner },
       {
         cwd: root,
         env,
-        mode,
+        mode: paused ? "recorded" : wantLive ? "live" : "recorded",
         cacheDir,
         logPath,
         ...(options.fetchImpl !== undefined ? { fetchImpl: options.fetchImpl } : {}),
       },
     );
+    const notice = paused ? recordedFallbackNotice(limiter.limit) : null;
     return buildSession({
       meetingId: meeting.id,
       title: meeting.title,
@@ -419,6 +531,7 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       mode: batch.mode,
       model: batch.model,
       drafts: batch.drafts,
+      ...(notice !== null ? { note: notice, rateLimitNotice: notice } : {}),
     });
   }
 
@@ -468,6 +581,11 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
         },
       };
     }
+    if (!limiter.allow(clock())) {
+      const notice = pastePausedNotice(limiter.limit);
+      return { status: 429, payload: { error: notice, rateLimitNotice: notice } };
+    }
+    limiter.record(clock());
     const batch = await findDrafts(
       { fixtureId: `pasted-${randomUUID().slice(0, 8)}`, transcript, owner },
       {
@@ -538,7 +656,11 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       purpose: draft.purpose,
       status: "approved",
       checkoutUrl: approved.checkoutUrl,
+      paypalStatus: null,
+      audit: [],
     };
+    recordAudit(tracked, "approve", "Approved by the owner.");
+    recordLedger(tracked, "approve", null);
     remember(tracked);
     if (approved.checkoutUrl === null) {
       return { status: 502, payload: { error: "PayPal sandbox did not return a checkout link." } };
@@ -561,6 +683,8 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
     if (existing !== undefined && existing.orderId !== null && existing.status === "approved" && gate !== null) {
       const rejected = await gate.reject(existing.id, "owner", "Rejected from the payments page");
       existing.status = "rejected";
+      recordAudit(existing, "reject", "Rejected by the owner. The PayPal order was abandoned.");
+      recordLedger(existing, "reject", null);
       return {
         status: 200,
         payload: {
@@ -589,7 +713,11 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       purpose: draft.purpose,
       status: "rejected",
       checkoutUrl: null,
+      paypalStatus: null,
+      audit: [],
     };
+    recordAudit(local, "reject", "Rejected by the owner. No PayPal order was created.");
+    recordLedger(local, "reject", null);
     remember(local);
     return {
       status: 200,
@@ -616,45 +744,103 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
     return { session, draft: pair.draft, check: pair.check };
   }
 
+  function sandboxConfig(): PayPalSandboxConfig | null {
+    if (sandbox === null) return null;
+    return {
+      clientId: sandbox.clientId,
+      clientSecret: sandbox.clientSecret,
+      ...(options.fetchImpl !== undefined ? { fetchImpl: options.fetchImpl } : {}),
+    };
+  }
+
   async function captureTracked(orderId: string): Promise<CapturedPayPalOrder> {
     if (options.captureOrder !== undefined) return options.captureOrder(orderId);
-    if (sandbox === null) throw new Error(NOT_CONFIGURED);
-    return capturePayPalSandboxOrder(
-      {
-        clientId: sandbox.clientId,
-        clientSecret: sandbox.clientSecret,
-        ...(options.fetchImpl !== undefined ? { fetchImpl: options.fetchImpl } : {}),
-      },
-      orderId,
-    );
+    const config = sandboxConfig();
+    if (config === null) throw new Error(NOT_CONFIGURED);
+    return capturePayPalSandboxOrder(config, orderId);
+  }
+
+  async function lookupOrder(orderId: string): Promise<PayPalOrderSnapshot> {
+    if (options.getOrder !== undefined) return options.getOrder(orderId);
+    const config = sandboxConfig();
+    if (config === null) throw new Error(NOT_CONFIGURED);
+    return fetchPayPalSandboxOrder(config, orderId);
+  }
+
+  function statusText(payment: TrackedPayment): string {
+    if (payment.status === "captured") return "Captured";
+    if (payment.status === "rejected") return "Rejected";
+    if (payment.status === "cancelled") return "Cancelled on PayPal. No money was captured.";
+    if (payment.paypalStatus !== null && !verifiedCaptured(payment.paypalStatus)) {
+      return `Not captured. PayPal reported ${payment.paypalStatus}.`;
+    }
+    return "Approved, waiting for PayPal";
+  }
+
+  function auditLabel(event: AuditEvent): string {
+    if (event.action === "approve") return "Approved by the owner.";
+    if (event.action === "reject") return "Rejected by the owner.";
+    return "Captured after PayPal reported the order complete.";
   }
 
   function receiptHtml(payment: TrackedPayment): string {
-    const status =
-      payment.status === "captured"
-        ? payment.captureStatus ?? "Captured"
-        : payment.status === "rejected"
-          ? "Rejected"
-          : payment.status === "cancelled"
-            ? "Cancelled on PayPal. No money was captured."
-            : "Approved, waiting for PayPal";
     const quotes = payment.quotes.map((quote) => `<blockquote>${escapeHtml(quote)}</blockquote>`).join("");
+    const audit =
+      payment.audit.length === 0
+        ? "<p>No decision has been recorded.</p>"
+        : `<ol class="audit">${payment.audit
+            .map(
+              (event) =>
+                `<li><time datetime="${escapeHtml(event.at)}">${escapeHtml(event.at)}</time> ${escapeHtml(auditLabel(event))}</li>`,
+            )
+            .join("")}</ol>`;
     return page(
       "Receipt",
       `<article class="receipt">
         <dl>
-          <dt>Status</dt><dd>${escapeHtml(status)}</dd>
+          <dt>Status</dt><dd class="status-value">${escapeHtml(statusText(payment))}</dd>
           <dt>Payee</dt><dd>${escapeHtml(payment.payee)}</dd>
           <dt>Amount</dt><dd>${escapeHtml(payment.amount)} ${escapeHtml(payment.currency)}</dd>
           <dt>What for</dt><dd>${escapeHtml(payment.purpose || "Not stated")}</dd>
           <dt>PayPal order</dt><dd>${escapeHtml(payment.orderId ?? "None")}</dd>
+          <dt>PayPal status</dt><dd>${escapeHtml(payment.paypalStatus ?? "Not fetched")}</dd>
           <dt>PayPal capture</dt><dd>${escapeHtml(payment.captureId ?? "Not captured")}</dd>
         </dl>
+        <h2>Decision log</h2>
+        ${audit}
         <h2>From the transcript</h2>
         ${quotes || "<p>No quote was stored.</p>"}
         <p><a href="/">Back to payments</a></p>
       </article>`,
     );
+  }
+
+  function sessionReceipts(): Array<Record<string, unknown>> {
+    return [...payments.values()]
+      .filter((payment) => payment.status === "captured")
+      .map((payment) => ({
+        id: payment.id,
+        payee: payment.payee,
+        amount: payment.amount,
+        currency: payment.currency,
+        purpose: payment.purpose,
+        orderId: payment.orderId,
+        captureId: payment.captureId,
+        capturedAt: payment.audit.find((event) => event.action === "capture")?.at ?? null,
+      }));
+  }
+
+  function proofPayload(): Record<string, unknown> {
+    const logText = existsSync(logPath) ? redact(readFileSync(logPath, "utf8")) : "";
+    return {
+      targets: EVAL_TARGETS,
+      log: summarizeModelLog(logText),
+      receipts: sessionReceipts(),
+      ledger,
+      liveAiHourlyLimit: limiter.limit,
+      liveAiCallsThisHour: limiter.used(clock()),
+      liveAiPaused: livePaused(),
+    };
   }
 
   const server = createServer((req, res) => {
@@ -669,11 +855,19 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
     const url = new URL(req.url ?? "/", "http://127.0.0.1");
     const method = req.method ?? "GET";
 
+    if (method === "GET" && url.pathname === "/healthz") {
+      sendJson(res, 200, { ok: true });
+      return;
+    }
     if (method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
       sendHtml(res, 200, readFileSync(path.join(publicDir, "index.html"), "utf8"));
       return;
     }
-    if (method === "GET" && (url.pathname === "/styles.css" || url.pathname === "/app.js")) {
+    if (method === "GET" && url.pathname === "/proof") {
+      sendHtml(res, 200, readFileSync(path.join(publicDir, "proof.html"), "utf8"));
+      return;
+    }
+    if (method === "GET" && (url.pathname === "/styles.css" || url.pathname === "/app.js" || url.pathname === "/proof.js")) {
       const file = path.join(publicDir, url.pathname.slice(1));
       const type = url.pathname.endsWith(".css") ? "text/css; charset=utf-8" : "text/javascript; charset=utf-8";
       res.writeHead(200, { "content-type": type, "cache-control": "no-store" });
@@ -681,12 +875,38 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
       return;
     }
     if (method === "GET" && url.pathname === "/api/meetings") {
+      const paused = livePaused();
       sendJson(res, 200, {
         paypalConfigured,
-        drafter: openaiKey().length > 0 ? "live" : "recorded",
-        drafterBadge: openaiKey().length > 0 ? "Live AI" : "Recorded AI output",
+        drafter: paused ? "recorded" : openaiKey().length > 0 ? "live" : "recorded",
+        drafterBadge: paused ? "Recorded AI output" : openaiKey().length > 0 ? "Live AI" : "Recorded AI output",
+        liveAiHourlyLimit: limiter.limit,
+        liveAiCallsThisHour: limiter.used(clock()),
+        liveAiPaused: paused,
+        rateLimitNotice: paused ? recordedFallbackNotice(limiter.limit) : null,
         samples,
         standIn,
+      });
+      return;
+    }
+    if (method === "GET" && url.pathname === "/api/proof") {
+      sendJson(res, 200, proofPayload());
+      return;
+    }
+    if (method === "POST" && url.pathname === "/api/proof/ledger/verify") {
+      sendJson(res, 200, verifyLedger(ledger));
+      return;
+    }
+    if (method === "POST" && url.pathname === "/api/proof/eval") {
+      const result = await runRecordedEval(root);
+      sendJson(res, 200, {
+        label: "Recorded replay of the live gpt-4o-mini run. This run did not call OpenAI.",
+        mode: result.mode,
+        model: result.model,
+        meetingCount: result.meetingCount,
+        targets: EVAL_TARGETS,
+        targetsMet: recordedTargetsMet(result.report),
+        report: result.report,
       });
       return;
     }
@@ -713,12 +933,38 @@ export async function startServer(options: ServerOptions = {}): Promise<RunningS
         return;
       }
       if (payment.status !== "captured") {
-        const captured = await captureTracked(orderId);
-        payment.status = "captured";
-        payment.captureId = captured.captureId;
-        payment.captureStatus = captured.status;
-        if (captured.amount.length > 0) payment.amount = captured.amount;
-        if (captured.currency.length > 0) payment.currency = captured.currency;
+        try {
+          let snapshot = await lookupOrder(orderId);
+          const step = nextCaptureStep(snapshot.status);
+          if (step === "capture") {
+            await captureTracked(orderId);
+            snapshot = await lookupOrder(orderId);
+          }
+          payment.paypalStatus = snapshot.status;
+          if (verifiedCaptured(snapshot.status)) {
+            payment.status = "captured";
+            payment.captureId = snapshot.captureId;
+            payment.captureStatus = snapshot.status;
+            if (snapshot.amount.length > 0) payment.amount = snapshot.amount;
+            if (snapshot.currency.length > 0) payment.currency = snapshot.currency;
+            if (!payment.audit.some((event) => event.action === "capture")) {
+              recordAudit(payment, "capture", "PayPal reported the order complete.");
+              recordLedger(payment, "capture", payment.captureId);
+            }
+          }
+        } catch (error) {
+          const message = redact(error instanceof Error ? error.message : "PayPal could not be checked.");
+          console.error(message);
+          sendHtml(
+            res,
+            502,
+            page(
+              "Receipt",
+              `<article class="receipt"><p>PayPal could not be checked, so this payment is not marked captured.</p><p><a href="/">Back to payments</a></p></article>`,
+            ),
+          );
+          return;
+        }
       }
       res.writeHead(303, { location: `${publicBase(req)}/receipt/${payment.id}` });
       res.end();

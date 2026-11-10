@@ -8,18 +8,26 @@
   </head>
   <body>
     <header class="site-header">
-      <p class="eyebrow">Second Seat</p>
+      <a class="skip" href="#samples-heading">Skip to sample meetings</a>
+      <div class="header-bar">
+        <p class="eyebrow">Second Seat</p>
+        <nav aria-label="Sections">
+          <a href="/" aria-current="page">Payments</a>
+          <a href="/proof">Proof</a>
+        </nav>
+      </div>
       <h1>Approval-gated payments</h1>
       <p class="lead">
         Pick a meeting, find the payments, and read the checker's verdict before anything can be approved.
       </p>
+      <p class="wake">If the first load is slow, the free server is waking up. Wait a few seconds and reload.</p>
     </header>
     <main>
       <p id="paypal-banner" class="banner" hidden></p>
       <section class="panel" aria-labelledby="samples-heading">
         <h2 id="samples-heading">Sample meetings</h2>
         <p id="drafter-note" class="muted"></p>
-        <div id="meeting-list" class="meeting-list"></div>
+        <div id="meeting-list" class="meeting-list" role="group" aria-labelledby="samples-heading"></div>
         <h2 id="standin-heading" class="standin-heading">Stand-in example</h2>
         <div id="standin-slot"></div>
         <section class="paste">

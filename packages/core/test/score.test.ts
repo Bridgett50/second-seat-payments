@@ -23,6 +23,7 @@ interface Meeting {
   title: string;
   owner: string;
   transcript: string;
+  set?: "stand-in";
   correct: Array<{ payee: string; amount: string; currency: string }>;
   traps: MeetingTrap[];
 }
@@ -237,6 +238,7 @@ describe("recorded cache scored by content", () => {
     const outcomes: string[] = [];
 
     for (const meeting of meetings) {
+      if (meeting.set === "stand-in") continue;
       const batch = await findDrafts(
         { fixtureId: meeting.id, transcript: meeting.transcript, owner: meeting.owner },
         {

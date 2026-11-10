@@ -51,6 +51,16 @@ export interface CapturedPayPalOrder {
   currency: string;
 }
 
+/** An order as PayPal reported it on a fetch, before we decide it is captured. */
+export interface PayPalOrderSnapshot {
+  orderId: string;
+  status: string;
+  captureId: string | null;
+  captureStatus: string | null;
+  amount: string;
+  currency: string;
+}
+
 type Env = Record<string, string | undefined>;
 
 /**
@@ -211,6 +221,39 @@ export function createPayPalSandboxPort(config: PayPalSandboxConfig): PayPalPort
   };
 }
 
+/**
+ * Fetch an order from PayPal sandbox.
+ * The caller decides what "Captured" means from this status, not from a local guess.
+ */
+export async function fetchPayPalSandboxOrder(
+  config: PayPalSandboxConfig,
+  orderId: string,
+): Promise<PayPalOrderSnapshot> {
+  const apiBase = sandboxBase(config);
+  const fetchImpl = config.fetchImpl ?? fetch;
+  const token = await accessToken(config, apiBase);
+  const response = await fetchImpl(`${apiBase}/v2/checkout/orders/${encodeURIComponent(orderId)}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+  const raw = await response.text();
+  if (!response.ok) {
+    throw new Error(
+      `PayPal sandbox order lookup failed: HTTP ${response.status} ${redactSecrets(config, raw).slice(0, 300)}`,
+    );
+  }
+  let body: unknown;
+  try {
+    body = JSON.parse(raw) as unknown;
+  } catch {
+    throw new Error("PayPal sandbox order lookup was not JSON");
+  }
+  return readOrder(orderId, body);
+}
+
 /** Capture a sandbox order after the buyer approves it on PayPal. */
 export async function capturePayPalSandboxOrder(
   config: PayPalSandboxConfig,
@@ -241,6 +284,55 @@ export async function capturePayPalSandboxOrder(
     throw new Error("PayPal sandbox capture response was not JSON");
   }
   return readCapture(orderId, body);
+}
+
+function readOrder(orderId: string, body: unknown): PayPalOrderSnapshot {
+  if (typeof body !== "object" || body === null) {
+    throw new Error("PayPal sandbox order lookup carried no order");
+  }
+  const record = body as { id?: unknown; status?: unknown; purchase_units?: unknown };
+  if (typeof record.id === "string" && record.id.length > 0 && record.id !== orderId) {
+    throw new Error("PayPal sandbox order lookup returned a different order id");
+  }
+  if (typeof record.status !== "string" || record.status.length === 0) {
+    throw new Error("PayPal sandbox order lookup carried no status");
+  }
+  const capture = firstCapture(record.purchase_units);
+  return {
+    orderId,
+    status: record.status,
+    captureId: capture?.id ?? null,
+    captureStatus: capture?.status ?? null,
+    amount: capture?.amount ?? "",
+    currency: capture?.currency ?? "",
+  };
+}
+
+function firstCapture(
+  purchaseUnits: unknown,
+): { id: string; status: string | null; amount: string; currency: string } | null {
+  const units = Array.isArray(purchaseUnits) ? purchaseUnits : [];
+  const first = units[0];
+  const payments =
+    typeof first === "object" && first !== null && "payments" in first ? first.payments : undefined;
+  const captures =
+    typeof payments === "object" && payments !== null && "captures" in payments && Array.isArray(payments.captures)
+      ? payments.captures
+      : [];
+  const capture = captures[0];
+  if (typeof capture !== "object" || capture === null) return null;
+  const captureRecord = capture as { id?: unknown; status?: unknown; amount?: unknown };
+  if (typeof captureRecord.id !== "string" || captureRecord.id.length === 0) return null;
+  const amountRecord =
+    typeof captureRecord.amount === "object" && captureRecord.amount !== null
+      ? (captureRecord.amount as { currency_code?: unknown; value?: unknown })
+      : undefined;
+  return {
+    id: captureRecord.id,
+    status: typeof captureRecord.status === "string" ? captureRecord.status : null,
+    amount: typeof amountRecord?.value === "string" ? amountRecord.value : "",
+    currency: typeof amountRecord?.currency_code === "string" ? amountRecord.currency_code : "",
+  };
 }
 
 function readCapture(orderId: string, body: unknown): CapturedPayPalOrder {
