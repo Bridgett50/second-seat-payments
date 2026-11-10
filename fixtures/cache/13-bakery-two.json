@@ -1,0 +1,30 @@
+{
+  "fixtureId": "13-bakery-two",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:25.189Z",
+  "drafts": [
+    {
+      "id": "13-bakery-two-1",
+      "payee": "Mill & Rye",
+      "amount": "540.00",
+      "currency": "USD",
+      "purpose": "flour delivery",
+      "due": "",
+      "quotes": [
+        "I'll pay Mill & Rye $540 for the flour delivery."
+      ]
+    },
+    {
+      "id": "13-bakery-two-2",
+      "payee": "Sweet Stamp",
+      "amount": "88.00",
+      "currency": "USD",
+      "purpose": "labels",
+      "due": "",
+      "quotes": [
+        "I'll pay Sweet Stamp $88 for the labels."
+      ]
+    }
+  ]
+}

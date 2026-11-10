@@ -18,7 +18,10 @@
       "kind": "quantity-not-price",
       "description": "Rosa needs 15 boxes. That count is not a price of $15.",
       "draftId": "12-count",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Boxdrop",
+      "amount": "15.00",
+      "currency": "USD"
     }
   ]
 }

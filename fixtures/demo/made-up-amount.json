@@ -1,0 +1,27 @@
+{
+  "id": "demo-made-up-amount",
+  "title": "Extra posters",
+  "owner": "Maya Chen",
+  "note": "Hand-written example, not AI output. One draft invents an amount. The checker blocks it.",
+  "transcript": "Maya Chen (owner): I'll pay Harbor Print $200 for the extra posters.\nSam Ortiz (Harbor Print): I can drop them off Friday.",
+  "drafts": [
+    {
+      "id": "demo-invented-amount",
+      "payee": "Harbor Print",
+      "amount": "875.00",
+      "currency": "USD",
+      "purpose": "Extra posters",
+      "due": "Friday",
+      "quotes": ["I'll pay Harbor Print $200 for the extra posters."]
+    },
+    {
+      "id": "demo-real-posters",
+      "payee": "Harbor Print",
+      "amount": "200.00",
+      "currency": "USD",
+      "purpose": "Extra posters",
+      "due": "Friday",
+      "quotes": ["I'll pay Harbor Print $200 for the extra posters."]
+    }
+  ]
+}

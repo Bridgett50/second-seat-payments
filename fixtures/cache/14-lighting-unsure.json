@@ -1,0 +1,19 @@
+{
+  "fixtureId": "14-lighting-unsure",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:26.325Z",
+  "drafts": [
+    {
+      "id": "14-lighting-unsure-1",
+      "payee": "Stage Left",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "lighting",
+      "due": "Friday",
+      "quotes": [
+        "OK I've decided. I'll pay Stage Left $900 for the lighting on Friday."
+      ]
+    }
+  ]
+}

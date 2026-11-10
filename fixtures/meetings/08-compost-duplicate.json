@@ -18,7 +18,11 @@
       "kind": "duplicate",
       "description": "Nina says the same $315 twice, and a second draft would pay it twice.",
       "draftId": "08-recap",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Green Bin Compost",
+      "amount": "315.00",
+      "currency": "USD",
+      "extraCopy": true
     }
   ]
 }

@@ -10,7 +10,10 @@
       "kind": "currency-unstated",
       "description": "Helen says 90 for the logo edits and never names a currency. Guessing USD is not proof.",
       "draftId": "10-logo",
-      "expect": "Needs a look"
+      "expect": "Needs a look",
+      "payee": "Nico Alvarez",
+      "amount": "90.00",
+      "currency": "USD"
     }
   ]
 }

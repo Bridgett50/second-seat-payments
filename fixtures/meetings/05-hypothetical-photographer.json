@@ -18,7 +18,10 @@
       "kind": "hypothetical",
       "description": "Ava says maybe next month she could pay the photographer, if the season picks up.",
       "draftId": "05-maybe",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Bright Frame",
+      "amount": "300.00",
+      "currency": "USD"
     }
   ]
 }

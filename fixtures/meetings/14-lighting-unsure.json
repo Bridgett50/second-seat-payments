@@ -18,7 +18,11 @@
       "kind": "unsure-quote",
       "description": "Chris says he is not sure about $900. The draft quotes that sentence instead of the later decision.",
       "draftId": "14-unsure",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Stage Left",
+      "amount": "900.00",
+      "currency": "USD",
+      "quote": "I'm not sure about the $900 lighting package from Stage Left."
     }
   ]
 }

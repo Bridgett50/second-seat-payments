@@ -14,7 +14,8 @@
   "scripts": {
     "build": "npm run build --workspace @second-seat/core && npm run build --workspace @second-seat/web",
     "typecheck": "npm run build --workspace @second-seat/core && npm run typecheck --workspace @second-seat/web && tsc --noEmit -p eval/tsconfig.json",
-    "test": "npm test --workspace @second-seat/core",
+    "start": "node apps/web/dist/server.js",
+    "test": "npm run build --workspace @second-seat/core && npm test --workspace @second-seat/core && npm test --workspace @second-seat/web",
     "eval": "npm run build --workspace @second-seat/core && tsc -p eval/tsconfig.json && DRAFTER_MODE=stand-in node eval/dist/run-eval.js",
     "eval:live": "npm run build --workspace @second-seat/core && tsc -p eval/tsconfig.json && DRAFTER_MODE=live node eval/dist/run-eval.js",
     "eval:recorded": "npm run build --workspace @second-seat/core && tsc -p eval/tsconfig.json && DRAFTER_MODE=recorded node eval/dist/run-eval.js"

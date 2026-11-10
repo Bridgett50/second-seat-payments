@@ -18,7 +18,10 @@
       "kind": "other-party-rejected",
       "description": "Sam offers a $90 rush fee and Maya says no.",
       "draftId": "01-rush",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Harbor Print",
+      "amount": "90.00",
+      "currency": "USD"
     }
   ]
 }

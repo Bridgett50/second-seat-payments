@@ -18,7 +18,10 @@
       "kind": "wrong-payee",
       "description": "The $220 quote is about Lena's Flowers, not the landlord.",
       "draftId": "03-landlord",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Oak Street Properties",
+      "amount": "220.00",
+      "currency": "USD"
     }
   ]
 }

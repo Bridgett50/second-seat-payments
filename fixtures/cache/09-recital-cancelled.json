@@ -1,0 +1,19 @@
+{
+  "fixtureId": "09-recital-cancelled",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:18.972Z",
+  "drafts": [
+    {
+      "id": "09-recital-cancelled-1",
+      "payee": "Metro Print",
+      "amount": "60.00",
+      "currency": "USD",
+      "purpose": "programs for the June recital",
+      "due": "",
+      "quotes": [
+        "I'll pay Metro Print $60 for the programs."
+      ]
+    }
+  ]
+}

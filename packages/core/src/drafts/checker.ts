@@ -2,10 +2,10 @@
  * Prove a payment draft from the transcript, with no model in the loop.
  *
  * A draft is Proven only when every quote is word for word in the
- * transcript, the amount, currency, and payee sit in that quote or follow
- * from it, the owner said it or agreed to it, and nobody takes it back
- * later. Anything the checker cannot prove is Needs a look or Blocked.
- * Blocked never reaches the approval gate.
+ * transcript, the amount, currency, and payee sit in that quote or in an
+ * offer the owner then agreed to, the owner said it or agreed to it, and
+ * nobody takes it back later. Anything the checker cannot prove is Needs
+ * a look or Blocked. Blocked never reaches the approval gate.
  */
 import { extractMoney, isQuantityOrDate, mentionsValue, normalizeAmount, normalizeCurrency, paymentKey, significantWords } from "./money.js";
 import { parseTranscript, turnContaining, type Turn } from "./transcript.js";
@@ -163,12 +163,74 @@ function moneyText(amount: string, currency: string): string {
   return `${amount} ${currency}`;
 }
 
-function result(draftId: string, verdict: Verdict, reasons: string[]): CheckResult {
-  return {
+function result(
+  draftId: string,
+  verdict: Verdict,
+  reasons: string[],
+  evidenceQuotes?: string[],
+): CheckResult {
+  const base = {
     draftId,
     verdict,
     reasons: reasons.length > 0 ? reasons : ["The checker could not prove this draft."],
   };
+  if (evidenceQuotes !== undefined && evidenceQuotes.length > 0) {
+    return { ...base, evidenceQuotes };
+  }
+  return base;
+}
+
+/** The owner is pointing at a price someone just stated, not naming a new one. */
+function refersToPriorOffer(text: string): boolean {
+  return /\b(that|this|it|these|those|deal|agreed|agree|yes|yeah|yep|do it|go ahead|sounds good)\b/i.test(
+    text,
+  );
+}
+
+/**
+ * The draft quotes the owner's yes ("Deal. I'll pay that on Tuesday.")
+ * while the amount and the payee are in the other person's line just
+ * before. Returns that offer so the amount, currency, and payee are
+ * checked against it. A rejection, a hedge, a different amount, or a
+ * later change still fails closed.
+ */
+function offerBehindAgreement(
+  turns: readonly Turn[],
+  located: readonly LocatedQuote[],
+  amount: number,
+): { offer: Turn; agreement: Turn } | null {
+  const agreement = located.find((item) => {
+    if (!item.turn.isOwner) return false;
+    if (mentionsValue(item.quote, amount).length > 0) return false;
+    if (extractMoney(item.turn.text).length > 0) return false;
+    if (hedgeOf(item.turn.text) !== "none") return false;
+    if (hasRejection(item.turn.text) || hasCancellation(item.turn.text)) return false;
+    if (!hasFirmAgreement(item.turn.text)) return false;
+    if (!refersToPriorOffer(item.turn.text)) return false;
+    return true;
+  });
+  if (agreement === undefined) return null;
+
+  for (
+    let index = agreement.turn.index - 1;
+    index >= 0 && agreement.turn.index - index <= 4;
+    index -= 1
+  ) {
+    const turn = turns[index];
+    if (turn === undefined) return null;
+    if (turn.isOwner) {
+      if (hasRejection(turn.text) || hasCancellation(turn.text) || hedgeOf(turn.text) !== "none") {
+        return null;
+      }
+      if (extractMoney(turn.text).length > 0) return null;
+      continue;
+    }
+    const response = nextOwnerTurn(turns, turn.index);
+    if (response === null || response.index !== agreement.turn.index) return null;
+    if (mentionsValue(turn.text, amount).length === 0) return null;
+    return { offer: turn, agreement: agreement.turn };
+  }
+  return null;
 }
 
 function laterProblem(input: {
@@ -338,20 +400,30 @@ export function checkDraft(input: CheckInput): CheckResult {
 
   const amountValue = amount === null ? Number.NaN : Number(amount);
   const withAmount = located.filter((item) => mentionsValue(item.quote, amountValue).length > 0);
-  const pool = withAmount.length > 0 ? withAmount : located;
-  const supporting =
+  const quotedAmount = withAmount.length > 0;
+  const behind =
+    !quotedAmount && amount !== null && currency !== null && Number.isFinite(amountValue)
+      ? offerBehindAgreement(turns, located, amountValue)
+      : null;
+  const pool = quotedAmount ? withAmount : located;
+  const supportingQuote =
     pool.find((item) => {
       if (!item.turn.isOwner || !Number.isFinite(amountValue)) return false;
       const sentence = sentenceContaining(item.quote, amountValue);
       return hasFirmAgreement(sentence) && hedgeOf(sentence) !== "hard";
     }) ?? pool[0];
+  const supporting =
+    behind === null
+      ? supportingQuote
+      : { quote: behind.offer.text, turn: behind.offer };
+  const evidence = behind === null ? undefined : [behind.offer.text, behind.agreement.text];
 
   if (supporting === undefined) {
-    return result(draft.id, "Blocked", blocking);
+    return result(draft.id, "Blocked", blocking, evidence);
   }
 
   if (amount === null || currency === null || !Number.isFinite(amountValue)) {
-    return result(draft.id, "Blocked", blocking);
+    return result(draft.id, "Blocked", blocking, evidence);
   }
 
   const hits = mentionsValue(supporting.quote, amountValue);
@@ -420,8 +492,19 @@ export function checkDraft(input: CheckInput): CheckResult {
   });
   if (changed !== null) blocking.push(changed);
 
-  if (blocking.length > 0) return result(draft.id, "Blocked", blocking);
-  if (looks.length > 0) return result(draft.id, "Needs a look", looks);
+  if (blocking.length > 0) return result(draft.id, "Blocked", blocking, evidence);
+  if (looks.length > 0) return result(draft.id, "Needs a look", looks, evidence);
+
+  if (behind !== null && amount !== null && currency !== null) {
+    return result(
+      draft.id,
+      "Proven",
+      [
+        `${owner} agreed ("${snippet(behind.agreement.text)}") to the price ${behind.offer.speakerName} stated ("${snippet(behind.offer.text)}"). The amount is ${moneyText(amount, currency)}, and nothing later in the meeting changes or cancels it.`,
+      ],
+      evidence,
+    );
+  }
 
   const who = addressed
     ? `${owner} said they would pay "you", which here is ${draft.payee.trim()}.`

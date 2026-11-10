@@ -25,14 +25,20 @@
       "kind": "rejected-currency",
       "description": "Riley offers 560 Canadian dollars and Samir says to keep the bill in dollars.",
       "draftId": "15-cad",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Cedar Lumber",
+      "amount": "560.00",
+      "currency": "CAD"
     },
     {
       "id": "painter-not-this-month",
       "kind": "other-party-rejected",
       "description": "Riley suggests a painter for $200 and Samir says not this month.",
       "draftId": "15-painter",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Painter",
+      "amount": "200.00",
+      "currency": "USD"
     }
   ]
 }

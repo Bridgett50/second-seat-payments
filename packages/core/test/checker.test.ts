@@ -110,6 +110,174 @@ describe("checker trap: the owner agrees to the other party's price", () => {
   });
 });
 
+describe("checker: owner agrees to an offer in the previous line", () => {
+  const transcript = [
+    "Ben Cho (Alto Dairy): The cheese delivery comes to €150.",
+    "Lila Nguyen (owner): Deal. I'll pay that on Tuesday.",
+    "Lila Nguyen (owner): I'll pay Bike Courier $40 to bring it from the dock.",
+    "Ben Cho (Alto Dairy): We can also take 150 Canadian dollars if that's easier.",
+    "Lila Nguyen (owner): No. Pay Alto Dairy in euros, the €150.",
+  ].join("\n");
+
+  it("proves Alto Dairy when the draft quotes only the owner's yes", () => {
+    const item = draft({
+      id: "cheese-agreement-only",
+      payee: "Alto Dairy",
+      amount: "150.00",
+      currency: "EUR",
+      purpose: "Cheese delivery",
+      due: "Tuesday",
+      quotes: ["Deal. I'll pay that on Tuesday."],
+    });
+    const result = checkDraft({ transcript, owner: "Lila Nguyen", draft: item });
+    expect(result.verdict).toBe("Proven");
+    expect(result.reasons.join(" ")).toMatch(/150\.00 EUR/);
+    expect(result.reasons.join(" ")).toMatch(/Deal\. I'll pay that on Tuesday\./);
+    expect(result.reasons.join(" ")).toMatch(/€150/);
+    expect(result.evidenceQuotes).toEqual([
+      "The cheese delivery comes to €150.",
+      "Deal. I'll pay that on Tuesday.",
+    ]);
+  });
+
+  it("proves the same payment when both the offer and the agreement are quoted", () => {
+    const item = draft({
+      id: "cheese-both",
+      payee: "Alto Dairy",
+      amount: "150.00",
+      currency: "EUR",
+      quotes: [
+        "The cheese delivery comes to €150.",
+        "Deal. I'll pay that on Tuesday.",
+      ],
+    });
+    const result = checkDraft({ transcript, owner: "Lila Nguyen", draft: item });
+    expect(result.verdict).toBe("Proven");
+    expect(result.reasons.join(" ")).toMatch(/agreed to pay it/);
+  });
+
+  it("blocks a dollar amount when the offer the owner accepted was in euros", () => {
+    const item = draft({
+      id: "cheese-usd",
+      payee: "Alto Dairy",
+      amount: "150.00",
+      currency: "USD",
+      quotes: ["Deal. I'll pay that on Tuesday."],
+    });
+    const result = checkDraft({ transcript, owner: "Lila Nguyen", draft: item });
+    expect(result.verdict).toBe("Blocked");
+    expect(result.reasons.join(" ")).toMatch(/in EUR, not USD/);
+  });
+
+  it("blocks the Canadian dollars the owner refused, even from the yes line", () => {
+    const item = draft({
+      id: "cheese-cad",
+      payee: "Alto Dairy",
+      amount: "150.00",
+      currency: "CAD",
+      quotes: ["Deal. I'll pay that on Tuesday."],
+    });
+    const result = checkDraft({ transcript, owner: "Lila Nguyen", draft: item });
+    expect(result.verdict).toBe("Blocked");
+    expect(result.reasons.join(" ")).toMatch(/in EUR, not CAD/);
+  });
+
+  it("does not pay a different payee just because the owner said yes", () => {
+    const item = draft({
+      id: "cheese-courier",
+      payee: "Bike Courier",
+      amount: "150.00",
+      currency: "EUR",
+      quotes: ["Deal. I'll pay that on Tuesday."],
+    });
+    const result = checkDraft({ transcript, owner: "Lila Nguyen", draft: item });
+    expect(result.verdict).toBe("Blocked");
+    expect(result.reasons.join(" ")).toMatch(/does not name Bike Courier/);
+  });
+});
+
+describe("checker: an agreed offer must not reopen a trap", () => {
+  it("does not treat a rejection as a yes to the previous offer", () => {
+    const transcript = [
+      "Sam Ortiz (Harbor Print): Want the rush printing for another $90?",
+      "Maya Chen (owner): No, skip the rush. Friday is fine.",
+    ].join("\n");
+    const item = draft({
+      id: "rush-snippet",
+      payee: "Harbor Print",
+      amount: "90.00",
+      quotes: ["Friday is fine."],
+    });
+    const result = checkDraft({ transcript, owner: "Maya Chen", draft: item });
+    expect(result.verdict).toBe("Blocked");
+  });
+
+  it("blocks the old price when the owner agrees and then changes it", () => {
+    const transcript = [
+      "Chris Moss (Moss Plumbing): I can do the sink for $650.",
+      "Elena Vasquez (owner): Deal. I'll pay that.",
+      "Elena Vasquez (owner): Actually, I'll pay Moss Plumbing $500.",
+    ].join("\n");
+    const item = draft({
+      id: "old-anaphora",
+      payee: "Moss Plumbing",
+      amount: "650.00",
+      quotes: ["Deal. I'll pay that."],
+    });
+    const result = checkDraft({ transcript, owner: "Elena Vasquez", draft: item });
+    expect(result.verdict).toBe("Blocked");
+    expect(result.reasons.join(" ")).toMatch(/later changed this to 500\.00 USD/);
+  });
+
+  it("blocks an agreed offer the owner later cancels", () => {
+    const transcript = [
+      "Host (Peak Hall): The hall deposit is $800.",
+      "Jonah Blake (owner): Deal. I'll pay that.",
+      "Jonah Blake (owner): Actually, cancel the Peak Hall deposit.",
+    ].join("\n");
+    const item = draft({
+      id: "cancel-anaphora",
+      payee: "Peak Hall",
+      amount: "800.00",
+      quotes: ["Deal. I'll pay that."],
+    });
+    const result = checkDraft({ transcript, owner: "Jonah Blake", draft: item });
+    expect(result.verdict).toBe("Blocked");
+    expect(result.reasons.join(" ")).toMatch(/cancelled/);
+  });
+
+  it("blocks a maybe, even when the next line says deal", () => {
+    const transcript = [
+      "Sam (Bright Frame): Maybe the photos could be $300 next month.",
+      "Ava Brooks (owner): Deal. I'll pay that.",
+    ].join("\n");
+    const item = draft({
+      id: "maybe-anaphora",
+      payee: "Bright Frame",
+      amount: "300.00",
+      quotes: ["Deal. I'll pay that."],
+    });
+    const result = checkDraft({ transcript, owner: "Ava Brooks", draft: item });
+    expect(result.verdict).toBe("Blocked");
+    expect(result.reasons.join(" ")).toMatch(/only a maybe/);
+  });
+
+  it("does not prove a proposal the owner turned down", () => {
+    const transcript = [
+      "Jordan Lee (Northwind Studio): The full rebrand is $2,000 and we can start Monday.",
+      "Helena Cruz (owner): I can't approve two thousand. Let's stop there.",
+    ].join("\n");
+    const item = draft({
+      id: "rebrand-tail",
+      payee: "Northwind Studio",
+      amount: "2000.00",
+      quotes: ["Let's stop there."],
+    });
+    const result = checkDraft({ transcript, owner: "Helena Cruz", draft: item });
+    expect(result.verdict).toBe("Blocked");
+  });
+});
+
 describe("checker trap: renegotiated amount", () => {
   const transcript = [
     "Elena Vasquez (owner): I'll pay Moss Plumbing $650 for the sink install.",

@@ -14,17 +14,19 @@ import {
   decideAdmission,
   findDrafts,
   scorePayments,
+  scoreTraps,
   type CheckResult,
   type DrafterMode,
   type PaymentDraft,
+  type ScoredDraft,
+  type TrapDefinition,
+  type TrapScore,
 } from "@second-seat/core";
 
-interface Trap {
-  id: string;
+interface Trap extends TrapDefinition {
   kind: string;
   description: string;
   draftId: string;
-  expect: "Proven" | "Needs a look" | "Blocked";
 }
 
 interface CorrectPayment {
@@ -90,7 +92,7 @@ function modeParagraph(mode: DrafterMode, model: string | null): string {
     return `Mode: live. These drafts came from a live OpenAI call${model ? ` (${model})` : ""}. The call log is local and is not committed. Saved copies are in fixtures/cache for a later recorded run.`;
   }
   if (mode === "recorded") {
-    return `Mode: recorded. These drafts were replayed from fixtures/cache. This run did not call OpenAI. The saved copies were produced by an earlier live call${model ? ` (${model})` : ""}.`;
+    return `Mode: recorded (from live gpt-4o-mini run Nov 9). These drafts were replayed from fixtures/cache. This run did not call OpenAI. The saved copies were produced by an earlier live call${model ? ` (${model})` : ""}.`;
   }
   return "Mode: stand-in. These drafts were written by hand, including deliberate mistakes that mimic a sloppy reader. They are not model output, and no OpenAI call was made.";
 }
@@ -104,6 +106,39 @@ function admittedDrafts(row: MeetingRow): PaymentDraft[] {
 
 function cell(value: string | number): string {
   return String(value).replace(/\|/g, "/");
+}
+
+function trapDefinition(trap: Trap): TrapDefinition {
+  return {
+    id: trap.id,
+    expect: trap.expect,
+    payee: trap.payee,
+    amount: trap.amount,
+    currency: trap.currency,
+    ...(trap.quote !== undefined && trap.quote.length > 0 ? { quote: trap.quote } : {}),
+    ...(trap.extraCopy === true ? { extraCopy: true } : {}),
+  };
+}
+
+function scoredDrafts(row: MeetingRow): ScoredDraft[] {
+  return row.drafts.map((draft, index) => {
+    const check = row.checks[index];
+    return {
+      id: draft.id,
+      payee: draft.payee,
+      amount: draft.amount,
+      currency: draft.currency,
+      quotes: draft.quotes,
+      verdict: check?.verdict ?? "Blocked",
+      reachesApproval: check !== undefined && decideAdmission(check, false).admit,
+    };
+  });
+}
+
+function outcomeLabel(score: TrapScore): string {
+  if (score.outcome === "avoided") return "avoided";
+  if (score.outcome === "through") return "got through";
+  return "checker caught";
 }
 
 async function main(): Promise<void> {
@@ -133,14 +168,14 @@ async function main(): Promise<void> {
   let correctTotal = 0;
   let held = 0;
   let blocked = 0;
-  let trapMisses = 0;
+  const trapScores: TrapScore[] = [];
 
   const meetingLines = [
     "| Meeting | AI alone correct | AI alone bad | AI + checker correct | AI + checker bad |",
     "| --- | ---: | ---: | ---: | ---: |",
   ];
   const trapLines = [
-    "| Trap | Kind | Meeting | Expected | Checker | Reaches approval | Met |",
+    "| Trap | Kind | Meeting | Expected | Checker | Reaches approval | Outcome |",
     "| --- | --- | --- | --- | --- | --- | --- |",
   ];
 
@@ -158,22 +193,35 @@ async function main(): Promise<void> {
       `| ${cell(row.meeting.title)} | ${alone.correctFound}/${alone.correctTotal} | ${alone.badReachingApproval} | ${checked.correctFound}/${checked.correctTotal} | ${checked.badReachingApproval} |`,
     );
 
-    for (const trap of row.meeting.traps) {
-      const check = row.checks.find((item) => item.draftId === trap.draftId);
-      const verdict = check?.verdict ?? "missing";
-      const reaches = check !== undefined && decideAdmission(check, false).admit;
-      const met = verdict === trap.expect && !reaches;
-      if (!met) trapMisses += 1;
+    const scores = scoreTraps(
+      row.meeting.traps.map(trapDefinition),
+      scoredDrafts(row),
+      row.meeting.correct,
+    );
+    trapScores.push(...scores);
+    row.meeting.traps.forEach((trap, index) => {
+      const score = scores[index];
+      const verdict = score === undefined || score.verdicts.length === 0 ? "none" : score.verdicts.join(", ");
+      const reaches = score?.reachesApproval === true;
       trapLines.push(
-        `| ${cell(trap.description)} | ${cell(trap.kind)} | ${cell(row.meeting.title)} | ${trap.expect} | ${verdict} | ${reaches ? "yes" : "no"} | ${met ? "yes" : "no"} |`,
+        `| ${cell(trap.description)} | ${cell(trap.kind)} | ${cell(row.meeting.title)} | ${trap.expect} | ${verdict} | ${reaches ? "yes" : "no"} | ${score === undefined ? "avoided" : outcomeLabel(score)} |`,
       );
-    }
+    });
   }
 
+  const avoided = trapScores.filter((score) => score.outcome === "avoided").length;
+  const caught = trapScores.filter((score) => score.outcome === "caught").length;
+  const through = trapScores.filter((score) => score.outcome === "through").length;
+  const verdictMisses = trapScores.filter((score) => score.outcome !== "avoided" && !score.verdictMatches).length;
   const correctMet = checkerCorrect === correctTotal;
   const badMet = checkerBad === 0;
-  const aloneShowsGap = aloneBad > 0 || mode !== "stand-in";
-  const targetsMet = correctMet && badMet && trapMisses === 0 && (mode !== "stand-in" || aloneBad > 0);
+  const throughMet = through === 0;
+  const aloneShowsGap = aloneBad > 0;
+  const standInTrapsMet =
+    mode !== "stand-in" ||
+    (avoided === 0 && through === 0 && verdictMisses === 0 && caught === trapScores.length);
+  const targetsMet =
+    correctMet && badMet && throughMet && standInTrapsMet && (mode !== "stand-in" || aloneShowsGap);
 
   const lines = [
     "# Eval results",
@@ -197,13 +245,31 @@ async function main(): Promise<void> {
     "",
     "## Per trap",
     "",
+    mode === "stand-in"
+      ? "These traps were written into the stand-in drafts on purpose. They are not AI output. A trap is matched by payee, amount, and currency."
+      : "Traps are matched by payee, amount, and currency, not by stand-in draft ids. Avoided means the drafter never produced that payment. Checker caught means it did, and the checker kept it from approval. Got through means it would reach approval.",
+    "",
+    "| | Count |",
+    "| --- | ---: |",
+    mode === "stand-in"
+      ? `| Planted traps the checker kept from approval | ${caught} |`
+      : `| Traps the AI avoided on its own | ${avoided} |`,
+    mode === "stand-in"
+      ? `| Planted traps that reached approval | ${through} |`
+      : `| Traps the AI fell for that the checker caught | ${caught} |`,
+    mode === "stand-in"
+      ? `| Planted traps the scorer could not find | ${avoided} |`
+      : `| Traps that got through | ${through} |`,
+    "",
     ...trapLines,
     "",
     "## Against the targets",
     "",
     `- Bad payments reaching approval with the checker: ${checkerBad}. Target: 0. ${badMet ? "Met." : "Not met."}`,
     `- Firm answer-key payments reaching approval with the checker: ${checkerCorrect}/${correctTotal}. Target: all of them. ${correctMet ? "Met." : "Not met."}`,
-    `- Planted traps caught (verdict matches the fixture, and the draft does not reach approval): ${rows.reduce((sum, row) => sum + row.meeting.traps.length, 0) - trapMisses} of ${rows.reduce((sum, row) => sum + row.meeting.traps.length, 0)}. ${trapMisses === 0 ? "Met." : "Not met."}`,
+    mode === "stand-in"
+      ? `- Planted traps kept from approval with the expected verdict: ${caught - verdictMisses} of ${trapScores.length}. ${standInTrapsMet ? "Met." : "Not met."}`
+      : `- Traps that got through: ${through}. Target: 0. ${throughMet ? "Met." : "Not met."}`,
     mode === "stand-in"
       ? `- Stand-in drafts that would reach approval with no checker, and should not: ${aloneBad}. Target: more than 0, so the fixture set shows the checker catching mistakes. ${aloneShowsGap ? "Met." : "Not met."}`
       : "- The stand-in gap target applies to stand-in mode only. This file is a live or recorded run.",
