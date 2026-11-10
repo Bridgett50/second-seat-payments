@@ -65,11 +65,12 @@ function meetingButton(meeting) {
   button.type = "button";
   button.className = "meeting";
   button.dataset.id = meeting.id;
+  button.setAttribute("aria-pressed", "false");
   const title = document.createElement("span");
   title.textContent = meeting.title;
   button.append(title);
   const meta = document.createElement("small");
-  meta.textContent = meeting.kind === "stand-in" ? "Stand-in example" : meeting.owner;
+  meta.textContent = meeting.kind === "stand-in" || meeting.handWritten ? "Stand-in example" : meeting.owner;
   button.append(meta);
   button.addEventListener("click", () => selectMeeting(meeting));
   return button;
@@ -97,7 +98,11 @@ function renderMeetings(payload) {
     ? ""
     : "PayPal sandbox not configured. You can still find payments and read the verdicts. Approving will not create an order.";
   const badge = payload.drafterBadge || "Recorded AI output";
-  drafterNote.textContent = `Sample meetings use ${badge}. A pasted transcript uses Live AI only when an OpenAI key is set.`;
+  if (payload.liveAiPaused && payload.rateLimitNotice) {
+    drafterNote.textContent = payload.rateLimitNotice;
+  } else {
+    drafterNote.textContent = `Sample meetings use ${badge}. A pasted transcript uses Live AI only when an OpenAI key is set.`;
+  }
   meetingList.replaceChildren(...payload.samples.map(meetingButton));
   const standin = payload.standIn;
   standinSlot.replaceChildren();
@@ -130,7 +135,13 @@ function renderResults(payload) {
   badge.className = badgeClass(payload.mode);
   badge.textContent = payload.badge;
   head.append(badge);
-  if (payload.note) {
+  if (payload.rateLimitNotice) {
+    const notice = document.createElement("p");
+    notice.className = "banner";
+    notice.setAttribute("role", "status");
+    notice.textContent = payload.rateLimitNotice;
+    head.append(notice);
+  } else if (payload.note) {
     const note = document.createElement("p");
     note.textContent = payload.note;
     head.append(note);
@@ -160,6 +171,33 @@ function renderResults(payload) {
   for (const draft of payload.drafts) {
     results.append(renderDraft(payload, draft));
   }
+}
+
+function appendSteps(card, draft) {
+  if (!Array.isArray(draft.steps) || draft.steps.length === 0) return;
+  const details = document.createElement("details");
+  const summary = document.createElement("summary");
+  summary.textContent = "How this was checked";
+  details.append(summary);
+  const list = document.createElement("ol");
+  list.className = "check-steps";
+  for (const step of draft.steps) {
+    const item = document.createElement("li");
+    const mark = document.createElement("span");
+    mark.className = step.passed ? "step-pass" : "step-fail";
+    mark.textContent = step.passed ? "Pass" : "Fail";
+    const rule = document.createElement("span");
+    rule.textContent = ` ${step.rule}`;
+    item.append(mark, rule);
+    if (step.matched) {
+      const matched = document.createElement("blockquote");
+      matched.textContent = step.matched;
+      item.append(matched);
+    }
+    list.append(item);
+  }
+  details.append(list);
+  card.append(details);
 }
 
 function renderDraft(payload, draft) {
@@ -200,6 +238,7 @@ function renderDraft(payload, draft) {
   const cited = new Set(draft.quotes || []);
   const extra = (draft.evidenceQuotes || []).filter((quote) => !cited.has(quote));
   if (extra.length > 0) card.append(quoteBlock("The checker also used", extra));
+  appendSteps(card, draft);
 
   const status = document.createElement("p");
   status.className = "card-error";
@@ -221,8 +260,11 @@ function renderDraft(payload, draft) {
     label.className = "confirm";
     confirm = document.createElement("input");
     confirm.type = "checkbox";
+    confirm.id = `confirm-${draft.id}`;
     const text = document.createElement("span");
+    text.id = `confirm-text-${draft.id}`;
     text.textContent = "I looked at this draft and I want to pay it.";
+    label.htmlFor = confirm.id;
     label.append(confirm, text);
     actions.append(label);
   }

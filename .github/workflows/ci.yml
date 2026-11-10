@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run eval
+      - run: npm run eval:recorded
+      - name: Forbidden name
+        run: |
+          if git grep -i -n -E 'pik[a]' -- . ':(exclude)package-lock.json'; then
+            echo "Found a forbidden name."
+            exit 1
+          fi
+      - name: Secret scan
+        run: node scripts/scan-secrets.mjs

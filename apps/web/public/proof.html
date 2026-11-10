@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Second Seat proof</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="skip" href="#targets-heading">Skip to the proof</a>
+      <div class="header-bar">
+        <p class="eyebrow">Second Seat</p>
+        <nav aria-label="Sections">
+          <a href="/">Payments</a>
+          <a href="/proof" aria-current="page">Proof</a>
+        </nav>
+      </div>
+      <h1>Proof</h1>
+      <p class="lead">
+        Targets were set before the results. This page fills every count from the server: the recorded eval, the model-call log, and the receipts captured in this session.
+      </p>
+      <p class="wake">If the first load is slow, the free server is waking up. Wait a few seconds and reload.</p>
+    </header>
+    <main>
+      <p id="proof-error" class="error" role="alert" hidden></p>
+      <section class="panel" aria-labelledby="targets-heading">
+        <h2 id="targets-heading">Targets</h2>
+        <p>These limits are the ones in the eval code. They match the targets written down before any results file.</p>
+        <dl id="targets"></dl>
+      </section>
+      <section class="panel" aria-labelledby="eval-heading">
+        <h2 id="eval-heading">Recorded eval</h2>
+        <p>Run it here. The server replays the saved drafts and scores them. It does not call OpenAI.</p>
+        <div class="proof-actions">
+          <button id="run-eval" type="button">Run the recorded eval</button>
+        </div>
+        <p id="eval-status" role="status"></p>
+        <p id="target-verdict"></p>
+        <div id="totals"></div>
+        <div id="meetings" class="table-wrap"></div>
+        <details>
+          <summary>Per trap</summary>
+          <div id="traps" class="table-wrap"></div>
+        </details>
+      </section>
+      <section class="panel" aria-labelledby="log-heading">
+        <h2 id="log-heading">Model-call log</h2>
+        <p>Counts and token totals from the local log. The log lines themselves are not shown.</p>
+        <dl id="log-summary"></dl>
+        <p id="cap-line"></p>
+      </section>
+      <section class="panel" aria-labelledby="ledger-heading">
+        <h2 id="ledger-heading">Decision ledger</h2>
+        <p>Each approve, reject, and capture is chained to the hash of the one before it. Verify recomputes the chain in code.</p>
+        <div class="proof-actions">
+          <button id="verify-ledger" type="button">Verify chain</button>
+        </div>
+        <p id="ledger-status" role="status"></p>
+        <div id="ledger" class="table-wrap"></div>
+      </section>
+      <section class="panel" aria-labelledby="receipts-heading">
+        <h2 id="receipts-heading">Receipts captured this session</h2>
+        <ul id="receipts"></ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <p class="sandbox-badge">PayPal Sandbox. No real money moves.</p>
+    </footer>
+    <noscript>This page needs JavaScript to load its numbers from the server.</noscript>
+    <script src="/proof.js"></script>
+  </body>
+</html>

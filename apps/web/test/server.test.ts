@@ -56,6 +56,8 @@ describe("payments page", () => {
       expect(home.status).toBe(200);
       expect(home.text).toContain("PayPal Sandbox. No real money moves.");
       expect(home.text).toContain("Find payments");
+      expect(home.text).toContain('href="/proof"');
+      expect(home.text).toContain("free server is waking up");
       const meetings = await request(port, "/api/meetings");
       const samples = meetings.json.samples as unknown[];
       expect(samples.length).toBeGreaterThanOrEqual(15);
@@ -179,13 +181,15 @@ describe("payments page", () => {
   it("creates a sandbox order, sends the buyer to PayPal, and captures on return", async () => {
     const calls: string[] = [];
     let orderBody = "";
+    let orderLookups = 0;
     const fetchImpl: typeof fetch = (url, init) => {
       const href = String(url);
-      calls.push(href);
+      const method = (init?.method ?? "GET").toUpperCase();
+      calls.push(`${method} ${href}`);
       if (href.endsWith("/v1/oauth2/token")) {
         return Promise.resolve(new Response(JSON.stringify({ access_token: "TEST-TOKEN" }), { status: 200 }));
       }
-      if (href.endsWith("/v2/checkout/orders")) {
+      if (method === "POST" && href.endsWith("/v2/checkout/orders")) {
         orderBody = typeof init?.body === "string" ? init.body : "";
         return Promise.resolve(
           new Response(
@@ -197,7 +201,35 @@ describe("payments page", () => {
           ),
         );
       }
-      if (href.endsWith("/capture")) {
+      if (method === "GET" && href.includes("/v2/checkout/orders/")) {
+        orderLookups += 1;
+        const completed = orderLookups > 1;
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              id: "5O190127TN364715T",
+              status: completed ? "COMPLETED" : "APPROVED",
+              purchase_units: [
+                {
+                  payments: completed
+                    ? {
+                        captures: [
+                          {
+                            id: "3C679366HH908993F",
+                            status: "COMPLETED",
+                            amount: { currency_code: "USD", value: "480.00" },
+                          },
+                        ],
+                      }
+                    : {},
+                },
+              ],
+            }),
+            { status: 200 },
+          ),
+        );
+      }
+      if (method === "POST" && href.endsWith("/capture")) {
         return Promise.resolve(
           new Response(
             JSON.stringify({
@@ -207,7 +239,7 @@ describe("payments page", () => {
                   payments: {
                     captures: [
                       {
-                        id: "3C679366HH908993F",
+                        id: "FROM-CAPTURE-RESPONSE",
                         status: "COMPLETED",
                         amount: { currency_code: "USD", value: "480.00" },
                       },
@@ -220,7 +252,7 @@ describe("payments page", () => {
           ),
         );
       }
-      return Promise.reject(new Error(`unexpected fetch ${href}`));
+      return Promise.reject(new Error(`unexpected fetch ${method} ${href}`));
     };
     await withServer(
       {
@@ -249,10 +281,23 @@ describe("payments page", () => {
         expect(receipt.text).toContain("480.00");
         expect(receipt.text).toContain("USD");
         expect(receipt.text).toContain("COMPLETED");
+        expect(receipt.text).toContain('class="status-value">Captured');
+        expect(receipt.text).toContain("Decision log");
+        expect(receipt.text).toContain("Approved by the owner.");
+        expect(receipt.text).toContain("Captured after PayPal reported the order complete.");
+        expect(receipt.text).not.toContain("FROM-CAPTURE-RESPONSE");
         expect(receipt.text).toContain("I'll pay Harbor Print $480 on Friday for the spring menus.");
         expect(receipt.text).toContain("PayPal Sandbox. No real money moves.");
         expect(receipt.text).not.toContain(PAYPAL_SECRET);
         expect(calls.some((href) => href.endsWith("/capture"))).toBe(true);
+        const ops = calls.map((entry) => {
+          if (entry.includes("/oauth2/token")) return "token";
+          if (entry.endsWith("/capture")) return "capture";
+          if (entry.startsWith("GET ") && entry.includes("/v2/checkout/orders/")) return "get";
+          if (entry.includes("/v2/checkout/orders")) return "create";
+          return entry;
+        });
+        expect(ops).toEqual(["token", "create", "token", "get", "token", "capture", "token", "get"]);
       },
     );
   });

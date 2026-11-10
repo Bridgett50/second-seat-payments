@@ -1,0 +1,23 @@
+# One free web service. Secrets stay in the Render dashboard (sync: false).
+services:
+  - type: web
+    name: second-seat-payments
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: PAYPAL_MODE
+        value: sandbox
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LIVE_AI_HOURLY_LIMIT
+        value: "20"

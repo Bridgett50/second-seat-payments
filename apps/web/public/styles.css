@@ -37,6 +37,28 @@ h2 { font-size: 1.15rem; margin: 0 0 0.5rem; }
 
 .site-header { width: min(42rem, calc(100% - 2rem)); margin: 0 auto; padding: 1.5rem 0 0.5rem; }
 
+.header-bar { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+
+.site-nav, nav { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+
+nav a { font: 0.95rem/1.2 ui-sans-serif, system-ui, sans-serif; }
+
+nav a[aria-current="page"] { color: var(--ink); font-weight: 700; text-decoration: none; }
+
+.skip {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  background: var(--paper);
+  border-radius: 8px;
+  transform: translateY(-150%);
+}
+
+.skip:focus { transform: none; z-index: 2; }
+
+.wake { margin: 0.4rem 0 0; color: var(--muted); font: 0.9rem/1.4 ui-sans-serif, system-ui, sans-serif; }
+
 .eyebrow {
   margin: 0;
   letter-spacing: 0.08em;
@@ -180,8 +202,26 @@ mark { background: var(--mark); color: inherit; padding: 0 0.12em; border-radius
 blockquote { margin: 0.4rem 0; padding-left: 0.8rem; border-left: 3px solid var(--mark); }
 a { color: var(--button); }
 
+.check-steps { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+.step-pass, .step-fail { font: 700 0.75rem/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }
+.step-pass { color: var(--green); }
+.step-fail { color: var(--red); }
+summary { cursor: pointer; font: 0.95rem/1.4 ui-sans-serif, system-ui, sans-serif; }
+
+.audit { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+.audit time { font: 0.85rem/1.4 ui-sans-serif, system-ui, sans-serif; color: var(--muted); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font: 0.92rem/1.4 ui-sans-serif, system-ui, sans-serif; }
+caption { text-align: left; font-weight: 600; margin: 0 0 0.4rem; }
+th, td { text-align: left; padding: 0.4rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.proof-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+
 @media (max-width: 640px) {
   h1 { font-size: 1.5rem; }
   .receipt dl { grid-template-columns: 1fr; }
   .card-top { flex-direction: column; align-items: flex-start; }
+  .actions { flex-direction: column; align-items: stretch; }
+  .actions button { width: 100%; }
 }

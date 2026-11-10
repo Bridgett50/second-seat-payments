@@ -30,11 +30,21 @@ export interface PaymentDraft {
 /** The only three answers the checker is allowed to give. */
 export type Verdict = "Proven" | "Needs a look" | "Blocked";
 
+/** One rule the checker applied, so a person can review the steps. */
+export interface CheckStep {
+  rule: string;
+  passed: boolean;
+  /** The exact text this rule matched, or an empty string when nothing matched. */
+  matched: string;
+}
+
 export interface CheckResult {
   draftId: string;
   verdict: Verdict;
   /** Plain-English reasons for the verdict. There is always at least one. */
   reasons: string[];
+  /** Every rule this check applied, in order, with pass or fail. */
+  steps: CheckStep[];
   /**
    * Extra transcript lines the checker used, when the draft's own quotes
    * are not the whole story. The payments page highlights these too.

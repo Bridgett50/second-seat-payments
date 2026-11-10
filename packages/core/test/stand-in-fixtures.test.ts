@@ -129,7 +129,7 @@ describe("stand-in fixtures", () => {
       drafts: [draft],
     });
     expect(check?.verdict).toBe("Blocked");
-    expect(decideAdmission(check ?? { draftId: "nope", verdict: "Blocked", reasons: ["no"] }, true).admit).toBe(
+    expect(decideAdmission(check ?? { draftId: "nope", verdict: "Blocked", reasons: ["no"], steps: [] }, true).admit).toBe(
       false,
     );
   });
