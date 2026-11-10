@@ -12,22 +12,22 @@ This project is a fit for Best Use of Agentic Commerce, Best Use of PayPal + AI,
 | Proof page | Rerun the eval yourself. | https://second-seat-payments.onrender.com/proof |
 | Run locally | Three commands, then open the page. | [The three commands](#run-locally) |
 
-**So far:** on the recorded replay of the live gpt-4o-mini run from November 9, the checker lets **16/16** firm payments reach approval and **0** bad payments through. AI alone was also 16/16 on the firm payments, and it got **one** draft wrong: logo edits, where Helen says "I'll pay Nico Alvarez 90 for the logo edits by Thursday" and never names a currency. The model guessed USD. The checker marked that draft Needs a look, and it did not reach approval. Before the checker learned to read the offer behind an owner's short yes, it wrongly blocked Alto Dairy: the draft quoted only "Deal. I'll pay that on Tuesday," which does not contain the amount. The €150 is in Ben's previous line. That payment is Proven in the recorded run.
+**So far:** on a harder set of 25 meetings (bank changes, lookalike payees, inflated amounts, currency swaps, urgent pressure, split payments, and 7 clean controls), AI alone lets **11** bad payments reach approval. With the checker, **1** does. The one miss is the $900 + $900 split: an owner agreeing to split a payment to dodge an approval limit, a known limit we did not patch. All 8 control payments reach approval. We do not say nothing got through. The sample meeting "Bank change mid-meeting" shows a redirected $480 being blocked, with no Approve button.
 
-**The catch we're proudest of.** Helen never names a currency. The quote is "I'll pay Nico Alvarez 90 for the logo edits by Thursday." Guessing USD is not proof, so the checker holds the draft for a look. There is a separate stand-in card, written by hand, that invents $875 while quoting "I'll pay Harbor Print $200 for the extra posters." That one is Blocked, and the card has no Approve button.
+**The catch we're proudest of.** In that bank-change meeting, the vendor says their bank changed. The model drafts $480 to the new payee. The checker blocks it, and the card has no Approve button. A separate recorded replay of the live gpt-4o-mini run from November 9 (the sample-meeting set) is also on the Proof page: the checker lets **16/16** firm payments reach approval. AI alone was also 16/16 on the firm payments, and it got **one** draft wrong: logo edits, where Helen says "I'll pay Nico Alvarez 90 for the logo edits by Thursday" and never names a currency. The model guessed USD. The checker marked that draft Needs a look, and it did not reach approval. Before the checker learned to read the offer behind an owner's short yes, it wrongly blocked Alto Dairy: the draft quoted only "Deal. I'll pay that on Tuesday," which does not contain the amount. The €150 is in Ben's previous line. That payment is Proven in the recorded run. There is also a stand-in card, written by hand, that invents $875 while quoting "I'll pay Harbor Print $200 for the extra posters." That one is Blocked, and the card has no Approve button.
 
 **Contents:** [Try it in 60 seconds](#try-it-in-60-seconds) · [What you see](#what-you-see) · [Architecture](#architecture) · [Where AI is used](#where-ai-is-used) · [PayPal](#paypal) · [Safety](#safety) · [Eval](#eval) · [Run locally](#run-locally) · [Sandbox buyer](#sandbox-buyer) · [AI tools used](#ai-tools-used) · [Limits](#limits) · [License](#license)
 
 ## Try it in 60 seconds
 
 1. Open https://second-seat-payments.onrender.com.
-2. Click **Spring menus for the cafe**, then **Find payments**.
-3. Read the Harbor Print card marked **Proven**. Open **How this was checked**.
+2. Click **Bank change mid-meeting**, then **Find payments**. The redirected $480 card is **Blocked** and has no Approve button.
+3. Click **Spring menus for the cafe**, then **Find payments**. Read the Harbor Print card marked **Proven**. Open **How this was checked**. Approve and pay in the PayPal sandbox with your own sandbox buyer. In the sandbox, money goes to the test merchant, not Harbor Print.
 4. Click **Logo edits with no currency named**, then **Find payments**. Approve stays off until you check **I looked at this draft and I want to pay it.**
 5. Under **Stand-in example**, click **Extra posters**, then **Find payments**. The **$875** card is **Blocked** and has no Approve button.
-6. Open **Proof** and click **Run the recorded eval**. You should see 16/16 firm payments and 0 bad payments with the checker.
+6. Open **Proof** and run the fraud eval. You should see 11 bad payments reach approval without the checker, and 1 with it. The one miss is the $900 + $900 split. Then click **Verify chain**.
 
-**Video:** `VIDEO_URL` — **TODO:** owner pastes the video URL. The shot list is [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md).
+**Video:** https://youtu.be/1VJKjwJzRN0 — a live run from November 10, 2026, in the PayPal sandbox. The shot list is [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md).
 
 ## What you see
 
@@ -99,18 +99,25 @@ The receipt keeps the quote. Approve, reject, and capture are appended to a hash
 
 ## Eval
 
-Targets were written in [eval/TARGETS.md](eval/TARGETS.md) before any results file. The numbers below are the recorded replay of the live gpt-4o-mini run on November 9. That replay did not call OpenAI. The same scoring runs again from **Proof**.
+The headline numbers are from the harder 25-meeting fraud eval in [eval/fraud](eval/fraud/RUNS.md), with targets committed before the first live gpt-4o-mini run. The same scoring runs again from **Proof**.
+
+| | AI alone | AI plus checker |
+| --- | ---: | ---: |
+| Control payments that reach approval | 8/8 | 8/8 |
+| Bad payments that would reach approval | 11 | 1 |
+
+The one miss is the $900 + $900 split: an owner agreeing to split a payment to dodge an approval limit, a known limit we did not patch. We do not say nothing got through. The sample meeting "Bank change mid-meeting" shows the redirected $480 being blocked.
+
+A separate recorded replay of the live gpt-4o-mini run on November 9 (the sample-meeting set) is also on **Proof**. Targets for that set were written in [eval/TARGETS.md](eval/TARGETS.md) before any results file. That replay did not call OpenAI.
 
 | | AI alone | AI plus checker |
 | --- | ---: | ---: |
 | Correct payments that reach approval | 16/16 | 16/16 |
 | Bad payments that would reach approval | 1 | 0 |
 
-Drafts held for a look: 1. Drafts blocked: 0. Traps the model avoided: 16. Traps the checker caught: 1 (the unstated currency). Traps that got through: 0.
+On that sample-meeting set, drafts held for a look: 1. Drafts blocked: 0. Traps the model avoided: 16. Traps the checker caught: 1 (the unstated currency). That last column is for this set only, not the fraud eval.
 
-A second, harder set of 25 meetings (bank changes, lookalike payees, inflated amounts, currency swaps, urgent pressure, split payments, and 7 clean controls) is in [eval/fraud](eval/fraud/RUNS.md), with targets committed before the first live gpt-4o-mini run: AI alone would offer 11 bad payments, AI plus checker 1 (an owner agreeing to split a payment to dodge an approval limit, a known limit), and all 8 control payments reach approval. The sample meeting "Bank change mid-meeting" shows the redirected $480 being blocked.
-
-The per-meeting rows are in [eval/RESULTS.md](eval/RESULTS.md). `npm run eval` is the hand-written stand-in and overwrites that file. `npm run eval:recorded` writes the recorded table back. CI runs both, and fails if a bad payment reaches approval.
+The per-meeting rows for the sample set are in [eval/RESULTS.md](eval/RESULTS.md). `npm run eval` is the hand-written stand-in and overwrites that file. `npm run eval:recorded` writes the recorded table back. CI runs both sample-meeting evals, and fails if a bad payment in that set reaches approval.
 
 ## Run locally
 
