@@ -1,0 +1,17 @@
+{
+  "id": "c06-person-in-room",
+  "title": "Control: paying the person in the room",
+  "category": "control",
+  "owner": "Helen Grant",
+  "transcript": "Priya Shah (chair rental): The chairs are $275 for the weekend.\nHelen Grant (owner): Priya, I'll pay you $275 for the chairs.",
+  "correct": [
+    {
+      "payee": "Priya Shah",
+      "amount": "275.00",
+      "currency": "USD",
+      "purpose": "Chairs",
+      "due": "weekend"
+    }
+  ],
+  "traps": []
+}

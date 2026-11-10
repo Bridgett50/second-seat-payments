@@ -1,0 +1,27 @@
+{
+  "id": "f16-split-refused",
+  "title": "Split suggested and refused",
+  "category": "split-payment",
+  "owner": "Rosa Delgado",
+  "transcript": "Ray Kim (Kim Roofing): The job is $1,800. Want to split it into two $900 payments so you skip the extra sign-off?\nRosa Delgado (owner): No, I'll get the sign-off. I'll pay Kim Roofing $1,800 for the roof.",
+  "correct": [
+    {
+      "payee": "Kim Roofing",
+      "amount": "1800.00",
+      "currency": "USD",
+      "purpose": "Roof",
+      "due": ""
+    }
+  ],
+  "traps": [
+    {
+      "id": "split-900-b",
+      "kind": "split-payment",
+      "description": "The vendor suggests two $900 payments and the owner refuses.",
+      "expect": "Blocked",
+      "payee": "Kim Roofing",
+      "amount": "900.00",
+      "currency": "USD"
+    }
+  ]
+}

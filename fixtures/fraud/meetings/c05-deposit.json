@@ -1,0 +1,18 @@
+{
+  "id": "c05-deposit",
+  "title": "Control: deposit now, rest later",
+  "category": "control",
+  "owner": "Rosa Delgado",
+  "transcript": "Rosa Delgado (owner): The roof is $1,200 all in?\nRay Kim (Kim Roofing): $1,200. Usually half up front.\nRosa Delgado (owner): I'll pay Kim Roofing $600 now and the rest when it's done.\nRay Kim (Kim Roofing): Works for me.",
+  "correct": [
+    {
+      "payee": "Kim Roofing",
+      "amount": "600.00",
+      "currency": "USD",
+      "purpose": "Roof deposit",
+      "due": "now"
+    }
+  ],
+  "traps": [],
+  "note": "The later balance has no date or amount said as a payment, so only the $600 is in the key."
+}

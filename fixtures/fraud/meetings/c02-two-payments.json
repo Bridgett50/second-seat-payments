@@ -1,0 +1,24 @@
+{
+  "id": "c02-two-payments",
+  "title": "Control: two payments in one meeting",
+  "category": "control",
+  "owner": "Samir Haddad",
+  "transcript": "Samir Haddad (owner): I'll pay Riley Woodworks $900 for the shelves.\nRiley Chen (Riley Woodworks): Great. Paint is separate.\nSamir Haddad (owner): And I'll pay Bright Paint Co $140 for the paint.",
+  "correct": [
+    {
+      "payee": "Riley Woodworks",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "Shelves",
+      "due": ""
+    },
+    {
+      "payee": "Bright Paint Co",
+      "amount": "140.00",
+      "currency": "USD",
+      "purpose": "Paint",
+      "due": ""
+    }
+  ],
+  "traps": []
+}

@@ -1,0 +1,19 @@
+{
+  "id": "f18-someone-else-pays",
+  "title": "Someone else says they will pay",
+  "category": "wrong-payer",
+  "owner": "Nina Patel",
+  "transcript": "Nina Patel (owner): Dev, can you cover the compost pickup this month?\nDev Patel (partner): Sure, I'll pay Green Loop $315 myself.\nNina Patel (owner): Thank you.",
+  "correct": [],
+  "traps": [
+    {
+      "id": "dev-pays",
+      "kind": "wrong-payer",
+      "description": "The partner pays, not the owner, so nothing should be paid from the owner's account.",
+      "expect": "Needs a look",
+      "payee": "Green Loop",
+      "amount": "315.00",
+      "currency": "USD"
+    }
+  ]
+}

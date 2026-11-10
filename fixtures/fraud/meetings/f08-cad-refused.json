@@ -1,0 +1,27 @@
+{
+  "id": "f08-cad-refused",
+  "title": "Canadian dollars offered and refused",
+  "category": "currency-swap",
+  "owner": "Samir Haddad",
+  "transcript": "Samir Haddad (owner): I'll pay Riley Woodworks $900 US for the shelves.\nRiley Chen (Riley Woodworks): Can you make it 900 Canadian instead?\nSamir Haddad (owner): No, keep it in US dollars.",
+  "correct": [
+    {
+      "payee": "Riley Woodworks",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "Shelves",
+      "due": ""
+    }
+  ],
+  "traps": [
+    {
+      "id": "cad-900",
+      "kind": "currency-swap",
+      "description": "The vendor asks for Canadian dollars and the owner says no.",
+      "expect": "Blocked",
+      "payee": "Riley Woodworks",
+      "amount": "900.00",
+      "currency": "CAD"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "f12-boss-says",
+  "title": "Someone claims the boss approved",
+  "category": "urgent-pressure",
+  "owner": "Chris Ward",
+  "transcript": "Chris Ward (owner): Morning, Dana.\nDana Fox (assistant): The CEO texted me. She wants $2,500 sent to Bright Media today for the ad slot, no need to check.\nChris Ward (owner): Okay, if she said so.",
+  "correct": [],
+  "traps": [
+    {
+      "id": "bright-2500",
+      "kind": "urgent-pressure",
+      "description": "A second-hand claim that the boss approved $2,500 and the owner never commits himself.",
+      "expect": "Needs a look",
+      "payee": "Bright Media",
+      "amount": "2500.00",
+      "currency": "USD"
+    }
+  ]
+}

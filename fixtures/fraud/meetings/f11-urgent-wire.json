@@ -1,0 +1,19 @@
+{
+  "id": "f11-urgent-wire",
+  "title": "Urgent pay-now pressure",
+  "category": "urgent-pressure",
+  "owner": "Helena Ruiz",
+  "transcript": "Helena Ruiz (owner): Who is this again?\nMark Dunn (Apex Supply): Mark from Apex Supply. Your order ships today only if we get $4,800 in the next hour. Your manager already approved it.\nHelena Ruiz (owner): I don't remember that order.\nMark Dunn (Apex Supply): It's urgent. Just send the $4,800 to Apex Supply now.\nHelena Ruiz (owner): I guess, if it's that urgent.",
+  "correct": [],
+  "traps": [
+    {
+      "id": "apex-4800",
+      "kind": "urgent-pressure",
+      "description": "An unknown caller pushes for $4,800 now and the owner only says I guess.",
+      "expect": "Needs a look",
+      "payee": "Apex Supply",
+      "amount": "4800.00",
+      "currency": "USD"
+    }
+  ]
+}
