@@ -56,8 +56,10 @@ function table(caption, headers, rows) {
   head.append(headRow);
   const body = document.createElement("tbody");
   for (const row of rows) {
+    const values = Array.isArray(row) ? row : row.cells;
     const tr = document.createElement("tr");
-    row.forEach((value, index) => {
+    if (!Array.isArray(row) && row.className) tr.className = row.className;
+    values.forEach((value, index) => {
       const cell = document.createElement("td");
       cell.textContent = value;
       if (headers[index]?.numeric) cell.className = "num";
@@ -97,6 +99,14 @@ function renderLog(payload) {
   capLine.textContent = `Live calls this hour: ${payload.liveAiCallsThisHour} of ${payload.liveAiHourlyLimit}.${paused}`;
 }
 
+function decisionLabel(entry) {
+  if (entry.sample === true) {
+    const name = typeof entry.outcome === "string" && entry.outcome.length > 0 ? entry.outcome : entry.decision;
+    return `Sample · ${name}`;
+  }
+  return entry.decision;
+}
+
 function renderLedger(entries) {
   if (!Array.isArray(entries) || entries.length === 0) {
     ledgerNode.replaceChildren();
@@ -119,17 +129,20 @@ function renderLedger(entries) {
         { label: "Previous hash", numeric: false },
         { label: "Hash", numeric: false },
       ],
-      entries.map((entry) => [
-        String(entry.seq),
-        entry.at,
-        entry.decision,
-        entry.draft?.payee ?? "",
-        `${entry.draft?.amount ?? ""} ${entry.draft?.currency ?? ""}`.trim(),
-        entry.paypalOrderId ?? "",
-        entry.paypalCaptureId ?? "",
-        entry.previousHash,
-        entry.hash,
-      ]),
+      entries.map((entry) => ({
+        className: entry.sample === true ? "sample-row" : "",
+        cells: [
+          String(entry.seq),
+          entry.at,
+          decisionLabel(entry),
+          entry.draft?.payee ?? "",
+          `${entry.draft?.amount ?? ""} ${entry.draft?.currency ?? ""}`.trim(),
+          entry.sample === true ? "Example only" : (entry.paypalOrderId ?? ""),
+          entry.sample === true ? "Example only" : (entry.paypalCaptureId ?? ""),
+          entry.previousHash,
+          entry.hash,
+        ],
+      })),
     ),
   );
 }
@@ -138,7 +151,7 @@ function renderReceipts(list) {
   receipts.replaceChildren();
   if (!Array.isArray(list) || list.length === 0) {
     const item = document.createElement("li");
-    item.textContent = "No payment has been captured in this server session.";
+    item.textContent = "No receipt is available.";
     receipts.append(item);
     return;
   }
@@ -146,13 +159,24 @@ function renderReceipts(list) {
     const item = document.createElement("li");
     const link = document.createElement("a");
     link.href = `/receipt/${encodeURIComponent(receipt.id)}`;
-    link.textContent = `${receipt.payee}, ${receipt.amount} ${receipt.currency}`;
-    item.append(link);
-    if (receipt.capturedAt) {
-      const time = document.createElement("time");
-      time.dateTime = receipt.capturedAt;
-      time.textContent = ` ${receipt.capturedAt}`;
-      item.append(time);
+    if (receipt.sample === true) {
+      item.className = "sample-receipt-row";
+      const badge = document.createElement("span");
+      badge.className = "badge stand-in";
+      badge.textContent = "Sample";
+      link.textContent = `${receipt.label} — ${receipt.outcome}`;
+      const aside = document.createElement("span");
+      aside.textContent = " Example data, not a live payment.";
+      item.append(badge, document.createTextNode(" "), link, aside);
+    } else {
+      link.textContent = `${receipt.payee}, ${receipt.amount} ${receipt.currency}`;
+      item.append(link);
+      if (receipt.capturedAt) {
+        const time = document.createElement("time");
+        time.dateTime = receipt.capturedAt;
+        time.textContent = ` ${receipt.capturedAt}`;
+        item.append(time);
+      }
     }
     receipts.append(item);
   }

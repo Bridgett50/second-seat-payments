@@ -2,9 +2,10 @@
  * Find payment drafts in a transcript.
  *
  * Live mode calls OpenAI when OPENAI_API_KEY is set, appends a log line
- * with the model and token counts, and saves the drafts so they can be
- * replayed. Recorded mode replays that saved file. Stand-in mode uses
- * hand-written drafts and does not pretend they came from a model.
+ * with the model, token counts, and the reason when the call fails, and
+ * saves the drafts so they can be replayed. Recorded mode replays that
+ * saved file. Stand-in mode uses hand-written drafts and does not pretend
+ * they came from a model.
  * Every result says which of the three modes produced it.
  */
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -48,6 +49,7 @@ interface LogFields {
   totalTokens: number | null;
   fixtureId: string;
   status: number;
+  error?: string;
 }
 
 function assertFixtureId(fixtureId: string): void {
@@ -125,7 +127,8 @@ function readRecorded(filePath: string, fixtureId: string): RecordedFile {
 
 function appendLog(logPath: string, fields: LogFields, secret: string): void {
   const line = JSON.stringify(fields);
-  const safe = secret.length === 0 ? line : line.split(secret).join("[redacted]");
+  const exact = secret.length === 0 ? line : line.split(secret).join("[redacted]");
+  const safe = exact.replace(/sk-[A-Za-z0-9*_-]{6,}/g, "[redacted]");
   mkdirSync(path.dirname(logPath), { recursive: true });
   appendFileSync(logPath, `${safe}\n`, "utf8");
 }
@@ -199,6 +202,7 @@ export async function findDrafts(
       fixtureId: input.fixtureId,
       status: call.status,
       ...usageFields(call.usage),
+      ...(call.ok ? {} : { error: call.error }),
     },
     apiKey,
   );

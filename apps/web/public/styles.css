@@ -164,6 +164,18 @@ mark { background: var(--mark); color: inherit; padding: 0 0.12em; border-radius
 .badge.recorded { background: #e7eef8; color: #1d3f73; }
 .badge.stand-in { background: var(--amber-bg); color: var(--amber); border: 1px dashed var(--amber); }
 
+.fallback-note {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font: 0.9rem/1.4 ui-sans-serif, system-ui, sans-serif;
+}
+
+tr.sample-row td { background: var(--amber-bg); }
+
+.sample-receipt { border-style: dashed; }
+
+.sample-receipt-row .badge { margin-right: 0.35rem; }
+
 .verdict {
   display: inline-block;
   border-radius: 999px;

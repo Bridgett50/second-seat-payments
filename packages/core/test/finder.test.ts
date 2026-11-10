@@ -181,7 +181,37 @@ describe("payment finder modes", () => {
     ).catch((error: unknown) => (error instanceof Error ? error.message : String(error)));
     expect(message).not.toContain(SECRET);
     expect(log).not.toContain(SECRET);
+    expect(log).toContain("HTTP 401");
+    expect(log).toContain("[redacted]");
     expect(message).toContain("[redacted]");
+  });
+
+  it("drops a partial key that an error body still shows", async () => {
+    const root = tempDir();
+    const logPath = path.join(root, "drafter.log");
+    let message = "";
+    try {
+      await findDrafts(
+        { fixtureId: "fixture-a", transcript: "hello", owner: "Maya" },
+        {
+          mode: "live",
+          env: { OPENAI_API_KEY: SECRET },
+          cacheDir: path.join(root, "cache"),
+          logPath,
+          fetchImpl: () =>
+            Promise.resolve(new Response("Incorrect API key provided: sk-test-*******LEAK", { status: 401 })),
+        },
+      );
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error);
+    }
+    expect(message).toMatch(/HTTP 401/);
+    expect(message).not.toContain("sk-test");
+    expect(message).not.toContain("LEAK");
+    const log = readFileSync(logPath, "utf8");
+    expect(log).not.toContain("sk-test");
+    expect(log).not.toContain("LEAK");
+    expect(log).toContain("[redacted]");
   });
 
   it("refuses live mode when the key is missing", async () => {
