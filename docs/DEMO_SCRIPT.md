@@ -1,21 +1,20 @@
 # Demo script
 
-Aim for under 2:45. Say the words. Do not read the checker rules aloud.
+The public video is https://youtu.be/1VJKjwJzRN0 (2:13, a live run from November 10, 2026, in the PayPal sandbox). Aim for under 2:30. Say the words. Do not read the checker rules aloud. Do not show a login, a password, or an email. Judges should use their own PayPal sandbox buyer. In the sandbox, money goes to the test merchant, not Harbor Print. Never say nothing got through.
 
-Shots are marked **Live** (this running page, or PayPal sandbox in the browser), **Recorded** (saved gpt-4o-mini drafts, no new model call), or **Stand-in** (hand-written drafts, not model output).
+Shots are marked **Live** (this running page, or PayPal sandbox in the browser), **Recorded** (saved gpt-4o-mini drafts, no new model call), or **Stand-in** (hand-written drafts, not model output). The public video is a live run.
 
 | Time | Shot | Say and do |
 | --- | --- | --- |
-| 0:00–0:10 | **Live** page, or a title card over it | Hook: A small-business owner agrees to a payment in a meeting. The dangerous part is paying something they never said. |
-| 0:10–0:22 | **Live** payments page | Open the demo. Point at the footer: PayPal Sandbox. No real money moves. Sample meetings on this page are **Recorded** output from a live gpt-4o-mini run. |
-| 0:22–0:40 | **Live** UI, **Recorded** draft | Click "Spring menus for the cafe". Click "Find payments". The Harbor Print card says Proven. Open "How this was checked" and show Pass next to the quote. Click Approve. |
-| 0:40–1:05 | **Live** PayPal sandbox | The sandbox checkout opens. Sign in with the sandbox buyer. Approve the payment. This is the only shot that needs the buyer login. |
-| 1:05–1:18 | **Live** receipt | The receipt says Captured. The quote from the meeting is on it. The decision log shows Approved, then Captured, with times. PayPal's own status is COMPLETED. |
-| 1:18–1:38 | **Live** UI, **Recorded** draft | Back to payments. Click "Logo edits with no currency named". Find payments. The card says Needs a look. The quote is "I'll pay Nico Alvarez 90 for the logo edits by Thursday." Approve stays off until you check "I looked at this draft and I want to pay it." |
-| 1:38–1:52 | **Live** UI, **Stand-in** drafts | Click "Extra posters" under Stand-in example. Find payments. The $875 card says Blocked and has no Approve button. The quote on that card says $200. Say: these drafts were written by hand. They are not model output. |
-| 1:52–2:18 | **Live** proof page, **Recorded** eval | Open Proof. Click "Run the recorded eval". The table fills from this server. Correct payments with the checker: 16/16. Bad payments that would reach approval: 0. If you captured a payment, click "Verify chain". |
-| 2:18–2:32 | **Live** page | Close: The model drafts the payment. Plain code checks it against the owner's words. The owner approves with one tap. The quote stays on the receipt. PayPal sandbox. No real money moves. |
+| 0:00–0:12 | **Live** bank-change meeting | Open "Bank change mid-meeting". Click "Find payments". The vendor said their bank changed. The redirected $480 card is Blocked and has no Approve button. Say: AI drafted it. Code blocked it. |
+| 0:12–0:25 | **Live** page, or a title card over it | FBI IC3 2024: $2,770,151,146 in business email compromise losses across 21,442 complaints (IC3 2024 Internet Crime Report, pages 10 and 19: https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf). Then: AI drafts. You approve. PayPal pays. |
+| 0:25–0:45 | **Live** UI, **Recorded** or live draft | Click "Spring menus for the cafe". Click "Find payments". The Harbor Print card says Proven, $480. Open "How this was checked" and show Pass next to the quote. Click Approve. |
+| 0:45–1:10 | **Live** PayPal sandbox | The sandbox checkout opens. Cut the login step. Do not show a login, password, or email. Approve the payment on PayPal's own sandbox page. Say that money goes to the test merchant, not Harbor Print. No real money moves. |
+| 1:10–1:25 | **Live** receipt | The receipt says Captured. The quote from the meeting is on it. PayPal's own status is COMPLETED. |
+| 1:25–1:55 | **Live** proof page, fraud eval | Open Proof. Run the 25-meeting fraud eval. The table fills from this server. AI alone lets 11 bad payments reach approval. With the checker, 1 does. The one miss is the $900 + $900 split, a known limit. Do not say nothing got through. |
+| 1:55–2:10 | **Live** proof page | Click "Verify chain" on the tamper-evident decision ledger. The hashes recompute. |
+| 2:10–2:20 | **Live** page | Close: The model drafts the payment. Plain code checks it against the owner's words. The owner approves with one tap. PayPal sandbox. Live demo: https://second-seat-payments.onrender.com. Repo: https://github.com/Bridgett50/second-seat-payments. |
 
-If the sandbox buyer is not filled in yet, stop after the Approve tap, say the checkout is the live PayPal shot for the finished video, and cut to the proof page. Do not pretend a capture happened.
+If you cannot complete a live capture on camera, cut from the Approve tap to a receipt you already captured in this session. Do not pretend a capture happened.
 
-The two meetings whose transcripts talk to the checker ("Window lettering" and "Door repair") are **Stand-in** shots. Use them only if you have time after 1:52. They are not in the recorded 16/16.
+The two meetings whose transcripts talk to the checker ("Window lettering" and "Door repair") are **Stand-in** shots. They are optional, and they are not part of the recorded sample-meeting 16/16.
