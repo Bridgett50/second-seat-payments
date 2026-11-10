@@ -4,62 +4,80 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Second Seat proof</title>
+    <link rel="preload" href="/fonts/hanken-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <header class="site-header">
-      <a class="skip" href="#targets-heading">Skip to the proof</a>
-      <div class="header-bar">
-        <p class="eyebrow">Second Seat</p>
-        <nav aria-label="Sections">
-          <a href="/">Payments</a>
-          <a href="/proof" aria-current="page">Proof</a>
-        </nav>
-      </div>
-      <h1>Proof</h1>
-      <p class="lead">
-        Targets were set before the results. This page fills every count from the server: the recorded eval, the model-call log, and the receipts captured in this session.
-      </p>
-      <p class="wake">A scheduled ping keeps this demo awake. If a first load is still slow, wait about 20 seconds and reload.</p>
+    <a class="skip" href="#scores">Skip to the proof</a>
+    <header class="topbar">
+      <a class="wordmark" href="/">Second Seat</a>
+      <span class="sandbox-pill">PayPal sandbox · no real money</span>
+      <nav aria-label="Sections">
+        <a href="/">Payments</a>
+        <a href="/proof" aria-current="page">Proof</a>
+      </nav>
     </header>
     <main>
       <p id="proof-error" class="error" role="alert" hidden></p>
-      <section class="panel" aria-labelledby="targets-heading">
+
+      <section id="scores" class="screen" aria-labelledby="proof-title">
+        <h1 id="proof-title" class="proof-title">Proof</h1>
+        <p class="proof-sub">Targets were written down before the run. Every number below comes from the server, not from us.</p>
+        <div id="score-tiles" class="score-tiles" aria-live="polite"></div>
+        <div class="run-row">
+          <button id="run-eval" type="button" class="primary">Run the eval again</button>
+          <span id="eval-status" class="status" role="status"></span>
+        </div>
+        <p id="target-verdict" class="muted"></p>
+        <div id="miss-box"></div>
+        <nav class="proof-nav" aria-label="Proof sections">
+          <a href="#by-trick">By trick</a>
+          <a href="#ledger-screen">Ledger</a>
+          <a href="#more">Targets, log, and every row</a>
+        </nav>
+      </section>
+
+      <section id="by-trick" class="screen" aria-labelledby="trick-title">
+        <h2 id="trick-title" class="trick-title">AI alone vs. with Second Seat</h2>
+        <p class="proof-sub">Bad payments that would reach approval, by trick. Fraud eval: <span id="trick-count">25</span> meetings, recorded replay.</p>
+        <div id="trick-table"></div>
+        <p id="trick-foot" class="trick-foot"></p>
+      </section>
+
+      <section id="ledger-screen" class="screen" aria-labelledby="ledger-heading">
+        <h2 id="ledger-heading" class="label">Decision ledger</h2>
+        <div id="chain-banner" class="chain-banner"><span class="big">Checking the chain…</span></div>
+        <p class="chain-why">Each approve, reject, and capture includes the hash of the entry before it, so no decision can be edited after the fact without breaking the chain. Rows marked Sample are example data loaded at startup, not live payments.</p>
+        <div class="proof-actions">
+          <button id="verify-ledger" type="button" class="linklike">Verify chain</button>
+          <span id="ledger-status" class="visually-hidden" role="status"></span>
+        </div>
+        <div id="ledger" class="table-wrap"></div>
+      </section>
+
+      <section id="more" class="more-proof" aria-labelledby="targets-heading">
         <h2 id="targets-heading">Targets</h2>
         <p>These limits are the ones in the eval code. They match the targets written down before any results file.</p>
         <dl id="targets"></dl>
-      </section>
-      <section class="panel" aria-labelledby="eval-heading">
-        <h2 id="eval-heading">Recorded eval</h2>
-        <p>Run it here. The server replays the saved drafts and scores them. It does not call OpenAI.</p>
-        <div class="proof-actions">
-          <button id="run-eval" type="button">Run the recorded eval</button>
-        </div>
-        <p id="eval-status" role="status"></p>
-        <p id="target-verdict"></p>
+        <h2 id="eval-heading">Recorded eval, every row</h2>
         <div id="totals"></div>
-        <div id="meetings" class="table-wrap"></div>
         <details>
-          <summary>Per trap</summary>
+          <summary>Per meeting (16-payment eval)</summary>
+          <div id="meetings" class="table-wrap"></div>
+        </details>
+        <details>
+          <summary>Per trap (16-payment eval)</summary>
           <div id="traps" class="table-wrap"></div>
         </details>
-      </section>
-      <section class="panel" aria-labelledby="log-heading">
+        <details>
+          <summary>Every fraud-eval draft</summary>
+          <div id="fraud-drafts" class="table-wrap"></div>
+        </details>
         <h2 id="log-heading">Model-call log</h2>
         <p>Counts and token totals from the local log. The log lines themselves are not shown.</p>
         <dl id="log-summary"></dl>
         <p id="cap-line"></p>
-      </section>
-      <section class="panel" aria-labelledby="ledger-heading">
-        <h2 id="ledger-heading">Decision ledger</h2>
-        <p>Each approve, reject, and capture is chained to the hash of the one before it. Verify recomputes the chain in code. Rows marked Sample are example data loaded at startup, not live payments. Live decisions from this session are listed after them.</p>
-        <div class="proof-actions">
-          <button id="verify-ledger" type="button">Verify chain</button>
-        </div>
-        <p id="ledger-status" role="status"></p>
-        <div id="ledger" class="table-wrap"></div>
-      </section>
-      <section class="panel" aria-labelledby="receipts-heading">
+        <p>Sample meetings use Live AI when an OpenAI key is set. A pasted transcript uses Live AI only when an OpenAI key is set.</p>
         <h2 id="receipts-heading">Receipts</h2>
         <p>Sample receipts are example data loaded at startup. Live receipts from this session are listed after them.</p>
         <ul id="receipts"></ul>
