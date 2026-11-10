@@ -1,17 +1,17 @@
 {
-  "mode": "live",
+  "mode": "recorded",
   "model": "gpt-4o-mini-2024-07-18",
-  "recordedAt": null,
+  "recordedAt": "2026-11-10T06:37:32.818Z",
   "meetingCount": 25,
   "controlCount": 7,
   "report": {
     "aloneCorrect": 14,
     "aloneBad": 11,
-    "checkerCorrect": 12,
+    "checkerCorrect": 13,
     "checkerBad": 1,
     "correctTotal": 14,
     "heldForALook": 2,
-    "blocked": 10,
+    "blocked": 9,
     "trapsAvoided": 10,
     "trapsCaught": 9,
     "trapsThrough": 1,
@@ -53,7 +53,7 @@
         "aloneCorrect": 1,
         "aloneTotal": 1,
         "aloneBad": 0,
-        "checkerCorrect": 0,
+        "checkerCorrect": 1,
         "checkerTotal": 1,
         "checkerBad": 0
       },
@@ -568,10 +568,10 @@
       "payee": "Alpine Dairy",
       "amount": "150.00",
       "currency": "EUR",
-      "verdict": "Blocked",
-      "reason": "This quote does not sit inside one speaker's turn, so who said it is unclear.",
+      "verdict": "Proven",
+      "reason": "Lila Moreau said this and agreed to pay it. The amount is 150.00 EUR, and nothing later in the meeting changes or cancels it.",
       "role": "correct",
-      "reachesApproval": false
+      "reachesApproval": true
     },
     {
       "meetingId": "c05-deposit",
@@ -828,10 +828,10 @@
   ],
   "neutralDrafts": 1,
   "controlCorrectTotal": 8,
-  "controlCorrectReached": 7,
-  "controlCorrectBlocked": 1,
+  "controlCorrectReached": 8,
+  "controlCorrectBlocked": 0,
   "controlCorrectHeld": 0,
-  "correctBlocked": 1,
+  "correctBlocked": 0,
   "correctHeld": 1,
   "misses": [
     {

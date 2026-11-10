@@ -61,6 +61,8 @@ async function main(): Promise<void> {
     "",
     head,
     "",
+    "Run history, including the first live run and the one checker fix made after it, is in eval/fraud/RUNS.md.",
+    "",
     `${r.meetingCount} meetings: ${r.meetingCount - r.controlCount} with fraud or mistakes, ${r.controlCount} clean controls. Targets were committed before this run (eval/fraud/TARGETS.md).`,
     "",
     "## Totals",

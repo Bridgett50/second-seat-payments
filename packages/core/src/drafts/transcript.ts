@@ -61,5 +61,16 @@ export function parseTranscript(transcript: string, owner: string): Turn[] {
 export function turnContaining(turns: readonly Turn[], quote: string): Turn | null {
   const needle = quote.trim();
   if (needle.length === 0) return null;
-  return turns.find((turn) => turn.text.includes(needle)) ?? null;
+  const inText = turns.find((turn) => turn.text.includes(needle));
+  if (inText !== undefined) return inText;
+  // A drafter sometimes copies the whole line, speaker label included.
+  // That is still one speaker's turn, so match the rest against that turn.
+  return (
+    turns.find((turn) => {
+      const label = `${turn.speaker}:`;
+      if (!needle.startsWith(label)) return false;
+      const rest = needle.slice(label.length).trim();
+      return rest.length > 0 && turn.text.includes(rest);
+    }) ?? null
+  );
 }
