@@ -17,7 +17,7 @@ interface MeetingFile {
   title: string;
   owner: string;
   transcript: string;
-  set?: "stand-in";
+  set?: "stand-in" | "fraud-sample";
   correct: Array<{ payee: string; amount: string; currency: string }>;
   traps: Array<EvalTrapInput & { draftId?: string }>;
 }
@@ -35,7 +35,7 @@ function loadMeetings(root: string): MeetingFile[] {
     .filter((name) => name.endsWith(".json"))
     .sort()
     .map((name) => JSON.parse(readFileSync(path.join(dir, name), "utf8")) as MeetingFile)
-    .filter((meeting) => meeting.set !== "stand-in");
+    .filter((meeting) => meeting.set !== "stand-in" && meeting.set !== "fraud-sample");
 }
 
 function trapInput(trap: MeetingFile["traps"][number]): EvalTrapInput {

@@ -44,3 +44,12 @@ re-roll), so only the checker changed.
 The checker proves what the owner said. It does not know a business's
 approval limit, so an owner who agrees to split a payment to stay under a
 limit gets a Proven first half. The second $900 was Blocked as a repeat.
+
+## Why bank-change fraud is in the set
+
+The FBI's Internet Crime Complaint Center counted 21,442 business email
+compromise complaints and $2,770,151,146 in reported losses for 2024
+(IC3 2024 Internet Crime Report, pages 10 and 19:
+https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf). The
+in-app sample "Bank change mid-meeting" uses the same transcript as
+meeting f01.

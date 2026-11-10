@@ -43,7 +43,7 @@ interface Meeting {
   correct: CorrectPayment[];
   traps: Trap[];
   /** Hand-written meetings are not part of the recorded live replay. */
-  set?: "stand-in";
+  set?: "stand-in" | "fraud-sample";
 }
 
 interface MeetingRow {
@@ -114,6 +114,8 @@ function verdictCell(verdicts: readonly string[]): string {
 async function main(): Promise<void> {
   const requested = (process.env.DRAFTER_MODE ?? "auto").trim().toLowerCase();
   const meetings = loadMeetings().filter((meeting) => {
+    // The bank-change sample is scored in the fraud eval (eval/fraud), not here.
+    if (meeting.set === "fraud-sample") return false;
     if (meeting.set === "stand-in" && (requested === "recorded" || requested === "live")) return false;
     return true;
   });
