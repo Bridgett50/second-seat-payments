@@ -1,0 +1,19 @@
+{
+  "fixtureId": "10-logo-currency",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:20.637Z",
+  "drafts": [
+    {
+      "id": "10-logo-currency-1",
+      "payee": "Nico Alvarez",
+      "amount": "90.00",
+      "currency": "USD",
+      "purpose": "logo edits",
+      "due": "Thursday",
+      "quotes": [
+        "I'll pay Nico Alvarez 90 for the logo edits by Thursday."
+      ]
+    }
+  ]
+}

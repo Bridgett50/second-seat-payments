@@ -1,0 +1,19 @@
+{
+  "fixtureId": "12-boxes-quantity",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:23.422Z",
+  "drafts": [
+    {
+      "id": "12-boxes-quantity-1",
+      "payee": "Boxdrop",
+      "amount": "64.00",
+      "currency": "USD",
+      "purpose": "15 boxes for the storeroom move",
+      "due": "Monday",
+      "quotes": [
+        "I'll pay Boxdrop $64 for those boxes on Monday."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "fixtureId": "03-flowers-wrong-payee",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:09.560Z",
+  "drafts": [
+    {
+      "id": "03-flowers-wrong-payee-1",
+      "payee": "Lena's Flowers",
+      "amount": "220.00",
+      "currency": "USD",
+      "purpose": "Saturday centerpieces",
+      "due": "",
+      "quotes": [
+        "I'll pay Lena's Flowers $220 for the Saturday centerpieces."
+      ]
+    }
+  ]
+}

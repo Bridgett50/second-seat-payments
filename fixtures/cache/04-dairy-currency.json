@@ -1,0 +1,30 @@
+{
+  "fixtureId": "04-dairy-currency",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:11.871Z",
+  "drafts": [
+    {
+      "id": "04-dairy-currency-1",
+      "payee": "Alto Dairy",
+      "amount": "150.00",
+      "currency": "EUR",
+      "purpose": "cheese delivery",
+      "due": "Tuesday",
+      "quotes": [
+        "Deal. I'll pay that on Tuesday."
+      ]
+    },
+    {
+      "id": "04-dairy-currency-2",
+      "payee": "Bike Courier",
+      "amount": "40.00",
+      "currency": "USD",
+      "purpose": "delivery from the dock",
+      "due": "",
+      "quotes": [
+        "I'll pay Bike Courier $40 to bring it from the dock."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "fixtureId": "05-hypothetical-photographer",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:13.469Z",
+  "drafts": [
+    {
+      "id": "05-hypothetical-photographer-1",
+      "payee": "City Permits",
+      "amount": "75.00",
+      "currency": "USD",
+      "purpose": "stall permit",
+      "due": "",
+      "quotes": [
+        "I'll pay City Permits $75 today for the stall permit."
+      ]
+    }
+  ]
+}

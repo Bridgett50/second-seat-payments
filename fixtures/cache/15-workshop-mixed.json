@@ -1,0 +1,30 @@
+{
+  "fixtureId": "15-workshop-mixed",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:27.760Z",
+  "drafts": [
+    {
+      "id": "15-workshop-mixed-1",
+      "payee": "Cedar Lumber",
+      "amount": "410.00",
+      "currency": "USD",
+      "purpose": "shelf lumber",
+      "due": "",
+      "quotes": [
+        "I'll pay Cedar Lumber $410 for the shelf lumber this week."
+      ]
+    },
+    {
+      "id": "15-workshop-mixed-2",
+      "payee": "Parcel Desk",
+      "amount": "36.00",
+      "currency": "USD",
+      "purpose": "hardware shipping",
+      "due": "",
+      "quotes": [
+        "I'll pay Parcel Desk $36 for the hardware shipping."
+      ]
+    }
+  ]
+}

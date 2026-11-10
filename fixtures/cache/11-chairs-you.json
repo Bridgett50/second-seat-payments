@@ -1,0 +1,19 @@
+{
+  "fixtureId": "11-chairs-you",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:22.115Z",
+  "drafts": [
+    {
+      "id": "11-chairs-you-1",
+      "payee": "Folding Co.",
+      "amount": "275.00",
+      "currency": "USD",
+      "purpose": "chair rental",
+      "due": "tomorrow",
+      "quotes": [
+        "I'll pay you $275 tomorrow for the chair rental."
+      ]
+    }
+  ]
+}
