@@ -108,6 +108,8 @@ Targets were written in [eval/TARGETS.md](eval/TARGETS.md) before any results fi
 
 Drafts held for a look: 1. Drafts blocked: 0. Traps the model avoided: 16. Traps the checker caught: 1 (the unstated currency). Traps that got through: 0.
 
+A second, harder set of 25 meetings (bank changes, lookalike payees, inflated amounts, currency swaps, urgent pressure, split payments, and 7 clean controls) is in [eval/fraud](eval/fraud/RUNS.md), with targets committed before the first live gpt-4o-mini run: AI alone would offer 11 bad payments, AI plus checker 1 (an owner agreeing to split a payment to dodge an approval limit, a known limit), and all 8 control payments reach approval. The sample meeting "Bank change mid-meeting" shows the redirected $480 being blocked.
+
 The per-meeting rows are in [eval/RESULTS.md](eval/RESULTS.md). `npm run eval` is the hand-written stand-in and overwrites that file. `npm run eval:recorded` writes the recorded table back. CI runs both, and fails if a bad payment reaches approval.
 
 ## Run locally
