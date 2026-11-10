@@ -18,14 +18,22 @@
       "kind": "amount-not-in-transcript",
       "description": "The quote is the real $1,200 sentence, but the draft says $1,500.",
       "draftId": "06-fifteen-hundred",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Ridge Roofing",
+      "amount": "1500.00",
+      "currency": "USD",
+      "quote": "I'll pay Ridge Roofing $1,200 for the shop roof repair."
     },
     {
       "id": "invented-sentence",
       "kind": "fabricated-quote",
       "description": "The draft quotes a sentence about $1,500 that Rosa never said.",
       "draftId": "06-invented",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Ridge Roofing",
+      "amount": "1500.00",
+      "currency": "USD",
+      "quote": "I'll pay Ridge Roofing $1,500 for the shop roof repair."
     }
   ]
 }

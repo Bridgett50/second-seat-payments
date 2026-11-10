@@ -10,7 +10,10 @@
       "kind": "other-party-rejected",
       "description": "Northwind proposes $2,000 and Helena says she cannot approve it.",
       "draftId": "07-rebrand",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Northwind Studio",
+      "amount": "2000.00",
+      "currency": "USD"
     }
   ]
 }

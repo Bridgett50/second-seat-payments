@@ -49,4 +49,4 @@ From the repository root:
   environment. `OPENAI_MODEL` overrides the default `gpt-4o-mini`.
 - `npm run eval:recorded` replays `fixtures/cache` after a live run.
 
-The results committed with the checker are the stand-in run.
+The results committed in `eval/RESULTS.md` are the recorded replay of the live gpt-4o-mini run from November 9. `npm run eval` still runs the stand-in and overwrites that file, so run `npm run eval:recorded` again before committing results.

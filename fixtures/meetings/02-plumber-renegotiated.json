@@ -18,7 +18,10 @@
       "kind": "renegotiated-amount",
       "description": "Elena first said $650, then agreed $500 after dropping the disposal.",
       "draftId": "02-old",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Moss Plumbing",
+      "amount": "650.00",
+      "currency": "USD"
     }
   ]
 }

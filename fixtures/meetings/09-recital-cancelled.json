@@ -18,7 +18,10 @@
       "kind": "cancelled",
       "description": "Jonah agrees to an $800 Peak Hall deposit and then cancels it.",
       "draftId": "09-hall",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Peak Hall",
+      "amount": "800.00",
+      "currency": "USD"
     }
   ]
 }

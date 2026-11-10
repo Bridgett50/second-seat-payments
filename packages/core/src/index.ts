@@ -27,6 +27,7 @@ export {
   receiptPurpose,
   samePayment,
   scorePayments,
+  scoreTraps,
   DEFAULT_OPENAI_MODEL,
 } from "./drafts/index.js";
 export type {
@@ -35,6 +36,10 @@ export type {
   DraftBatch,
   DrafterMode,
   PaymentDraft,
+  ScoredDraft,
   StandInLibrary,
+  TrapDefinition,
+  TrapOutcome,
+  TrapScore,
   Verdict,
 } from "./drafts/index.js";

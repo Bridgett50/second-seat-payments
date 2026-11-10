@@ -25,14 +25,20 @@
       "kind": "currency-mixup",
       "description": "The cheese price is €150, and a draft records it as 150 US dollars.",
       "draftId": "04-cheese-usd",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Alto Dairy",
+      "amount": "150.00",
+      "currency": "USD"
     },
     {
       "id": "canadian-dollars-refused",
       "kind": "rejected-currency",
       "description": "Ben offers 150 Canadian dollars and Lila says no, pay euros.",
       "draftId": "04-cheese-cad",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "Alto Dairy",
+      "amount": "150.00",
+      "currency": "CAD"
     }
   ]
 }

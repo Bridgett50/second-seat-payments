@@ -18,7 +18,10 @@
       "kind": "wrong-payee",
       "description": "Helen mentions the Grand Hotel, then tells Priya she will pay her $275.",
       "draftId": "11-hotel",
-      "expect": "Blocked"
+      "expect": "Blocked",
+      "payee": "The Grand Hotel",
+      "amount": "275.00",
+      "currency": "USD"
     }
   ]
 }
