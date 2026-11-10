@@ -153,7 +153,7 @@ function renderResults(payload) {
   if (payload.model) {
     const model = document.createElement("p");
     model.className = "muted";
-    model.textContent = `Model on the saved call: ${payload.model}`;
+    model.textContent = `Model: ${payload.model}`;
     head.append(model);
   }
   results.append(head);
