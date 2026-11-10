@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Second Seat payments</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <p class="eyebrow">Second Seat</p>
+      <h1>Approval-gated payments</h1>
+      <p class="lead">
+        Pick a meeting, find the payments, and read the checker's verdict before anything can be approved.
+      </p>
+    </header>
+    <main>
+      <p id="paypal-banner" class="banner" hidden></p>
+      <section class="panel" aria-labelledby="samples-heading">
+        <h2 id="samples-heading">Sample meetings</h2>
+        <p id="drafter-note" class="muted"></p>
+        <div id="meeting-list" class="meeting-list"></div>
+        <h2 id="standin-heading" class="standin-heading">Stand-in example</h2>
+        <div id="standin-slot"></div>
+        <section class="paste">
+          <h2>Paste a transcript</h2>
+          <label>
+            Owner's name
+            <input id="paste-owner" name="owner" type="text" autocomplete="name" />
+          </label>
+          <label>
+            Transcript
+            <textarea id="paste-transcript" name="transcript" rows="6"></textarea>
+          </label>
+          <button id="paste-find" type="button">Find payments in this transcript</button>
+        </section>
+      </section>
+      <section id="transcript-panel" class="panel" hidden>
+        <h2 id="transcript-title">Transcript</h2>
+        <pre id="transcript" class="transcript"></pre>
+        <button id="find-payments" type="button">Find payments</button>
+      </section>
+      <section id="results" class="results" hidden aria-live="polite"></section>
+      <p id="page-error" class="error" role="alert" hidden></p>
+    </main>
+    <footer class="site-footer">
+      <p class="sandbox-badge">PayPal Sandbox. No real money moves.</p>
+    </footer>
+    <script src="/app.js"></script>
+  </body>
+</html>
