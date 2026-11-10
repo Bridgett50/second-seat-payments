@@ -1,0 +1,20 @@
+{
+  "name": "@second-seat/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Approval gate for payment commitments. A draft waits until the owner approves or rejects it.",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  }
+}
