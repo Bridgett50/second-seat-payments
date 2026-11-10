@@ -1,0 +1,24 @@
+{
+  "id": "01-harbor-menus",
+  "title": "Spring menus for the cafe",
+  "owner": "Maya Chen",
+  "transcript": "Maya Chen (owner): Thanks for coming by the cafe, Sam.\nSam Ortiz (Harbor Print): Happy to. The spring menu proof is ready.\nMaya Chen (owner): I'll pay Harbor Print $480 on Friday for the spring menus.\nSam Ortiz (Harbor Print): Want the rush printing for another $90?\nMaya Chen (owner): No, skip the rush. Friday is fine.",
+  "correct": [
+    {
+      "payee": "Harbor Print",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "Spring menus",
+      "due": "Friday"
+    }
+  ],
+  "traps": [
+    {
+      "id": "rejected-rush-fee",
+      "kind": "other-party-rejected",
+      "description": "Sam offers a $90 rush fee and Maya says no.",
+      "draftId": "01-rush",
+      "expect": "Blocked"
+    }
+  ]
+}

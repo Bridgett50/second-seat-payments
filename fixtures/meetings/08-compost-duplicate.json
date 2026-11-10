@@ -1,0 +1,24 @@
+{
+  "id": "08-compost-duplicate",
+  "title": "Summer compost pickup, said twice",
+  "owner": "Nina Patel",
+  "transcript": "Nina Patel (owner): Green Bin can keep the alley clear through August.\nNina Patel (owner): I'll pay Green Bin Compost $315 for the summer pickup.\nNina Patel (owner): So, to recap, I'll pay Green Bin Compost $315 for the summer pickup.",
+  "correct": [
+    {
+      "payee": "Green Bin Compost",
+      "amount": "315.00",
+      "currency": "USD",
+      "purpose": "Summer pickup",
+      "due": "August"
+    }
+  ],
+  "traps": [
+    {
+      "id": "recap-second-copy",
+      "kind": "duplicate",
+      "description": "Nina says the same $315 twice, and a second draft would pay it twice.",
+      "draftId": "08-recap",
+      "expect": "Blocked"
+    }
+  ]
+}

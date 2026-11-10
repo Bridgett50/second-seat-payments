@@ -1,0 +1,329 @@
+{
+  "01-harbor-menus": [
+    {
+      "id": "01-menus",
+      "payee": "Harbor Print",
+      "amount": "480.00",
+      "currency": "USD",
+      "purpose": "Spring menus",
+      "due": "Friday",
+      "quotes": ["I'll pay Harbor Print $480 on Friday for the spring menus."]
+    },
+    {
+      "id": "01-rush",
+      "payee": "Harbor Print",
+      "amount": "90.00",
+      "currency": "USD",
+      "purpose": "Rush printing",
+      "due": "Friday",
+      "quotes": ["Want the rush printing for another $90?"]
+    }
+  ],
+  "02-plumber-renegotiated": [
+    {
+      "id": "02-old",
+      "payee": "Moss Plumbing",
+      "amount": "650.00",
+      "currency": "USD",
+      "purpose": "Sink install",
+      "due": "Thursday",
+      "quotes": ["I'll pay Moss Plumbing $650 for the sink install."]
+    },
+    {
+      "id": "02-new",
+      "payee": "Moss Plumbing",
+      "amount": "500.00",
+      "currency": "USD",
+      "purpose": "Sink install without the disposal",
+      "due": "Thursday",
+      "quotes": ["I'll pay Moss Plumbing $500."]
+    }
+  ],
+  "03-flowers-wrong-payee": [
+    {
+      "id": "03-flowers",
+      "payee": "Lena's Flowers",
+      "amount": "220.00",
+      "currency": "USD",
+      "purpose": "Saturday centerpieces",
+      "due": "Saturday",
+      "quotes": ["I'll pay Lena's Flowers $220 for the Saturday centerpieces."]
+    },
+    {
+      "id": "03-landlord",
+      "payee": "Oak Street Properties",
+      "amount": "220.00",
+      "currency": "USD",
+      "purpose": "Saturday centerpieces",
+      "due": "Saturday",
+      "quotes": ["I'll pay Lena's Flowers $220 for the Saturday centerpieces."]
+    }
+  ],
+  "04-dairy-currency": [
+    {
+      "id": "04-cheese-eur",
+      "payee": "Alto Dairy",
+      "amount": "150.00",
+      "currency": "EUR",
+      "purpose": "Cheese delivery",
+      "due": "Tuesday",
+      "quotes": ["The cheese delivery comes to €150."]
+    },
+    {
+      "id": "04-courier",
+      "payee": "Bike Courier",
+      "amount": "40.00",
+      "currency": "USD",
+      "purpose": "Bring the cheese from the dock",
+      "due": "",
+      "quotes": ["I'll pay Bike Courier $40 to bring it from the dock."]
+    },
+    {
+      "id": "04-cheese-usd",
+      "payee": "Alto Dairy",
+      "amount": "150.00",
+      "currency": "USD",
+      "purpose": "Cheese delivery",
+      "due": "Tuesday",
+      "quotes": ["The cheese delivery comes to €150."]
+    },
+    {
+      "id": "04-cheese-cad",
+      "payee": "Alto Dairy",
+      "amount": "150.00",
+      "currency": "CAD",
+      "purpose": "Cheese delivery",
+      "due": "Tuesday",
+      "quotes": ["We can also take 150 Canadian dollars if that's easier."]
+    }
+  ],
+  "05-hypothetical-photographer": [
+    {
+      "id": "05-permit",
+      "payee": "City Permits",
+      "amount": "75.00",
+      "currency": "USD",
+      "purpose": "Stall permit",
+      "due": "today",
+      "quotes": ["I'll pay City Permits $75 today for the stall permit."]
+    },
+    {
+      "id": "05-maybe",
+      "payee": "Bright Frame",
+      "amount": "300.00",
+      "currency": "USD",
+      "purpose": "Photography",
+      "due": "next month",
+      "quotes": ["Maybe next month we could pay Bright Frame $300 if wedding season picks up."]
+    }
+  ],
+  "06-roof-amount": [
+    {
+      "id": "06-roof",
+      "payee": "Ridge Roofing",
+      "amount": "1200.00",
+      "currency": "USD",
+      "purpose": "Shop roof repair",
+      "due": "the 12th",
+      "quotes": ["I'll pay Ridge Roofing $1,200 for the shop roof repair."]
+    },
+    {
+      "id": "06-fifteen-hundred",
+      "payee": "Ridge Roofing",
+      "amount": "1500.00",
+      "currency": "USD",
+      "purpose": "Shop roof repair",
+      "due": "the 12th",
+      "quotes": ["I'll pay Ridge Roofing $1,200 for the shop roof repair."]
+    },
+    {
+      "id": "06-invented",
+      "payee": "Ridge Roofing",
+      "amount": "1500.00",
+      "currency": "USD",
+      "purpose": "Shop roof repair",
+      "due": "the 12th",
+      "quotes": ["I'll pay Ridge Roofing $1,500 for the shop roof repair."]
+    }
+  ],
+  "07-rebrand-rejected": [
+    {
+      "id": "07-rebrand",
+      "payee": "Northwind Studio",
+      "amount": "2000.00",
+      "currency": "USD",
+      "purpose": "Storefront rebrand",
+      "due": "Monday",
+      "quotes": ["The full rebrand is $2,000 and we can start Monday."]
+    }
+  ],
+  "08-compost-duplicate": [
+    {
+      "id": "08-pickup",
+      "payee": "Green Bin Compost",
+      "amount": "315.00",
+      "currency": "USD",
+      "purpose": "Summer pickup",
+      "due": "August",
+      "quotes": ["I'll pay Green Bin Compost $315 for the summer pickup."]
+    },
+    {
+      "id": "08-recap",
+      "payee": "Green Bin Compost",
+      "amount": "315.00",
+      "currency": "USD",
+      "purpose": "Summer pickup",
+      "due": "August",
+      "quotes": ["So, to recap, I'll pay Green Bin Compost $315 for the summer pickup."]
+    }
+  ],
+  "09-recital-cancelled": [
+    {
+      "id": "09-hall",
+      "payee": "Peak Hall",
+      "amount": "800.00",
+      "currency": "USD",
+      "purpose": "June recital deposit",
+      "due": "June",
+      "quotes": ["I'll pay Peak Hall $800 as the deposit for the June recital."]
+    },
+    {
+      "id": "09-programs",
+      "payee": "Metro Print",
+      "amount": "60.00",
+      "currency": "USD",
+      "purpose": "Recital programs",
+      "due": "",
+      "quotes": ["I'll pay Metro Print $60 for the programs."]
+    }
+  ],
+  "10-logo-currency": [
+    {
+      "id": "10-logo",
+      "payee": "Nico Alvarez",
+      "amount": "90.00",
+      "currency": "USD",
+      "purpose": "Logo edits",
+      "due": "Thursday",
+      "quotes": ["I'll pay Nico Alvarez 90 for the logo edits by Thursday."]
+    }
+  ],
+  "11-chairs-you": [
+    {
+      "id": "11-chairs",
+      "payee": "Folding Co.",
+      "amount": "275.00",
+      "currency": "USD",
+      "purpose": "Chair rental",
+      "due": "tomorrow",
+      "quotes": ["I'll pay you $275 tomorrow for the chair rental."]
+    },
+    {
+      "id": "11-hotel",
+      "payee": "The Grand Hotel",
+      "amount": "275.00",
+      "currency": "USD",
+      "purpose": "Chair rental",
+      "due": "tomorrow",
+      "quotes": ["I'll pay you $275 tomorrow for the chair rental."]
+    }
+  ],
+  "12-boxes-quantity": [
+    {
+      "id": "12-boxes",
+      "payee": "Boxdrop",
+      "amount": "64.00",
+      "currency": "USD",
+      "purpose": "Moving boxes",
+      "due": "Monday",
+      "quotes": ["I'll pay Boxdrop $64 for those boxes on Monday."]
+    },
+    {
+      "id": "12-count",
+      "payee": "Boxdrop",
+      "amount": "15.00",
+      "currency": "USD",
+      "purpose": "Moving boxes",
+      "due": "Saturday",
+      "quotes": ["We need 15 boxes from Boxdrop for the move."]
+    }
+  ],
+  "13-bakery-two": [
+    {
+      "id": "13-flour",
+      "payee": "Mill & Rye",
+      "amount": "540.00",
+      "currency": "USD",
+      "purpose": "Flour delivery",
+      "due": "Wednesday",
+      "quotes": ["I'll pay Mill & Rye $540 for the flour delivery."]
+    },
+    {
+      "id": "13-labels",
+      "payee": "Sweet Stamp",
+      "amount": "88.00",
+      "currency": "USD",
+      "purpose": "Labels",
+      "due": "Wednesday",
+      "quotes": ["I'll pay Sweet Stamp $88 for the labels."]
+    }
+  ],
+  "14-lighting-unsure": [
+    {
+      "id": "14-unsure",
+      "payee": "Stage Left",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "Lighting package",
+      "due": "Friday",
+      "quotes": ["I'm not sure about the $900 lighting package from Stage Left."]
+    },
+    {
+      "id": "14-decided",
+      "payee": "Stage Left",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "Lighting package",
+      "due": "Friday",
+      "quotes": ["I'll pay Stage Left $900 for the lighting on Friday."]
+    }
+  ],
+  "15-workshop-mixed": [
+    {
+      "id": "15-lumber",
+      "payee": "Cedar Lumber",
+      "amount": "410.00",
+      "currency": "USD",
+      "purpose": "Shelf lumber",
+      "due": "this week",
+      "quotes": ["I'll pay Cedar Lumber $410 for the shelf lumber this week."]
+    },
+    {
+      "id": "15-shipping",
+      "payee": "Parcel Desk",
+      "amount": "36.00",
+      "currency": "USD",
+      "purpose": "Hardware shipping",
+      "due": "",
+      "quotes": ["I'll pay Parcel Desk $36 for the hardware shipping."]
+    },
+    {
+      "id": "15-cad",
+      "payee": "Cedar Lumber",
+      "amount": "560.00",
+      "currency": "CAD",
+      "purpose": "Shelf lumber",
+      "due": "this week",
+      "quotes": ["We can take 560 Canadian dollars instead, if you want."]
+    },
+    {
+      "id": "15-painter",
+      "payee": "Painter",
+      "amount": "200.00",
+      "currency": "USD",
+      "purpose": "Paint the workshop",
+      "due": "",
+      "quotes": ["We should also hire a painter for $200."]
+    }
+  ]
+}

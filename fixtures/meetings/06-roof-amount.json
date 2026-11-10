@@ -1,0 +1,31 @@
+{
+  "id": "06-roof-amount",
+  "title": "Shop roof repair",
+  "owner": "Rosa Delgado",
+  "transcript": "Rosa Delgado (owner): The leak over the stockroom cannot wait.\nRosa Delgado (owner): I'll pay Ridge Roofing $1,200 for the shop roof repair.\nRosa Delgado (owner): They can start on the 12th.",
+  "correct": [
+    {
+      "payee": "Ridge Roofing",
+      "amount": "1200.00",
+      "currency": "USD",
+      "purpose": "Shop roof repair",
+      "due": "the 12th"
+    }
+  ],
+  "traps": [
+    {
+      "id": "amount-never-said",
+      "kind": "amount-not-in-transcript",
+      "description": "The quote is the real $1,200 sentence, but the draft says $1,500.",
+      "draftId": "06-fifteen-hundred",
+      "expect": "Blocked"
+    },
+    {
+      "id": "invented-sentence",
+      "kind": "fabricated-quote",
+      "description": "The draft quotes a sentence about $1,500 that Rosa never said.",
+      "draftId": "06-invented",
+      "expect": "Blocked"
+    }
+  ]
+}

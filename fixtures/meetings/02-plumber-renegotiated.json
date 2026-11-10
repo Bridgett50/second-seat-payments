@@ -1,0 +1,24 @@
+{
+  "id": "02-plumber-renegotiated",
+  "title": "Sink install at the bakery",
+  "owner": "Elena Vasquez",
+  "transcript": "Elena Vasquez (owner): The prep sink has to be in before the holiday orders.\nChris Moss (Moss Plumbing): I can start Thursday.\nElena Vasquez (owner): I'll pay Moss Plumbing $650 for the sink install.\nChris Moss (Moss Plumbing): If we skip the disposal, I can do the sink for $500.\nElena Vasquez (owner): Yes, skip the disposal. I'll pay Moss Plumbing $500.",
+  "correct": [
+    {
+      "payee": "Moss Plumbing",
+      "amount": "500.00",
+      "currency": "USD",
+      "purpose": "Sink install without the disposal",
+      "due": "Thursday"
+    }
+  ],
+  "traps": [
+    {
+      "id": "old-sink-price",
+      "kind": "renegotiated-amount",
+      "description": "Elena first said $650, then agreed $500 after dropping the disposal.",
+      "draftId": "02-old",
+      "expect": "Blocked"
+    }
+  ]
+}

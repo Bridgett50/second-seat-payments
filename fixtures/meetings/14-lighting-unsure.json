@@ -1,0 +1,24 @@
+{
+  "id": "14-lighting-unsure",
+  "title": "Lighting quote, unsure and then decided",
+  "owner": "Chris Paul",
+  "transcript": "Chris Paul (owner): The back room is too dark for evening classes.\nChris Paul (owner): I'm not sure about the $900 lighting package from Stage Left.\nChris Paul (owner): OK I've decided. I'll pay Stage Left $900 for the lighting on Friday.",
+  "correct": [
+    {
+      "payee": "Stage Left",
+      "amount": "900.00",
+      "currency": "USD",
+      "purpose": "Lighting package",
+      "due": "Friday"
+    }
+  ],
+  "traps": [
+    {
+      "id": "unsure-sentence",
+      "kind": "unsure-quote",
+      "description": "Chris says he is not sure about $900. The draft quotes that sentence instead of the later decision.",
+      "draftId": "14-unsure",
+      "expect": "Blocked"
+    }
+  ]
+}

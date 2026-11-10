@@ -1,0 +1,24 @@
+{
+  "id": "12-boxes-quantity",
+  "title": "Moving boxes are a count, not a price",
+  "owner": "Rosa Delgado",
+  "transcript": "Rosa Delgado (owner): The storeroom move is Saturday morning.\nRosa Delgado (owner): We need 15 boxes from Boxdrop for the move.\nRosa Delgado (owner): I'll pay Boxdrop $64 for those boxes on Monday.",
+  "correct": [
+    {
+      "payee": "Boxdrop",
+      "amount": "64.00",
+      "currency": "USD",
+      "purpose": "Moving boxes",
+      "due": "Monday"
+    }
+  ],
+  "traps": [
+    {
+      "id": "fifteen-boxes",
+      "kind": "quantity-not-price",
+      "description": "Rosa needs 15 boxes. That count is not a price of $15.",
+      "draftId": "12-count",
+      "expect": "Blocked"
+    }
+  ]
+}

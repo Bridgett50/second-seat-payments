@@ -1,0 +1,24 @@
+{
+  "id": "05-hypothetical-photographer",
+  "title": "Market stall permit and a photographer",
+  "owner": "Ava Brooks",
+  "transcript": "Ava Brooks (owner): The Saturday market needs a paid permit before we set up.\nAva Brooks (owner): Maybe next month we could pay Bright Frame $300 if wedding season picks up.\nAva Brooks (owner): I'll pay City Permits $75 today for the stall permit.",
+  "correct": [
+    {
+      "payee": "City Permits",
+      "amount": "75.00",
+      "currency": "USD",
+      "purpose": "Stall permit",
+      "due": "today"
+    }
+  ],
+  "traps": [
+    {
+      "id": "maybe-next-month",
+      "kind": "hypothetical",
+      "description": "Ava says maybe next month she could pay the photographer, if the season picks up.",
+      "draftId": "05-maybe",
+      "expect": "Blocked"
+    }
+  ]
+}
