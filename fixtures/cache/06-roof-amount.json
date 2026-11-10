@@ -1,0 +1,19 @@
+{
+  "fixtureId": "06-roof-amount",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:15.564Z",
+  "drafts": [
+    {
+      "id": "06-roof-amount-1",
+      "payee": "Ridge Roofing",
+      "amount": "1200.00",
+      "currency": "USD",
+      "purpose": "shop roof repair",
+      "due": "12th",
+      "quotes": [
+        "I'll pay Ridge Roofing $1,200 for the shop roof repair."
+      ]
+    }
+  ]
+}

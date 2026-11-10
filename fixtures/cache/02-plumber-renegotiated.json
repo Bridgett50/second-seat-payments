@@ -1,0 +1,19 @@
+{
+  "fixtureId": "02-plumber-renegotiated",
+  "source": "live",
+  "model": "gpt-4o-mini-2024-07-18",
+  "recordedAt": "2026-11-10T02:16:07.966Z",
+  "drafts": [
+    {
+      "id": "02-plumber-renegotiated-1",
+      "payee": "Moss Plumbing",
+      "amount": "500.00",
+      "currency": "USD",
+      "purpose": "sink install",
+      "due": "",
+      "quotes": [
+        "I'll pay Moss Plumbing $500."
+      ]
+    }
+  ]
+}
